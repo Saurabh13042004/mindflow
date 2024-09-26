@@ -99,7 +99,7 @@ export default function CanvasPage() {
     (params) => {
       console.log("Connecting:", params);
       setEdges((eds) =>
-        addEdge({ ...params, animated: true, type: "smoothstep" }, eds)
+        addEdge({ ...params }, eds)
       );
     },
     [setEdges]
@@ -115,7 +115,7 @@ export default function CanvasPage() {
         (edge) => edge.source === parentId
       ).length;
 
-      const nodeSpacingX = 200; // Horizontal spacing for new nodes
+      const nodeSpacingX = 300; // Horizontal spacing for new nodes
       const baseNodeSpacingY = 100; // Base vertical spacing for nodes
 
       let newNodePosition;
@@ -132,7 +132,7 @@ export default function CanvasPage() {
         const yOffset =
           direction * baseNodeSpacingY * Math.floor((childNodeCount + 1) / 2);
         newNodePosition = {
-          x: parentNode.position.x + nodeSpacingX, // Always position to the right
+          x: parentNode.position.x + nodeSpacingX + 50, // Always position to the right
           y: parentNode.position.y + yOffset, // Larger top or bottom based on count
         };
       }
@@ -150,8 +150,6 @@ export default function CanvasPage() {
         id: `e${parentId}-${newNodeId}`,
         source: parentId,
         target: newNodeId,
-        type: "smoothstep",
-        animated: true, // Animation for better visualization of edge connection
       };
 
       // Update the state with the new node and edge
