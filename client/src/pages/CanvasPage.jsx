@@ -22,6 +22,11 @@ const initialNodes = [
     targetPosition: Position.Left,
   },
 ];
+const buttonPushed = []
+const topC = []
+const bottomC = []
+const rightC = []
+const leftC = []
 
 const initialEdges = [];
 
@@ -45,7 +50,7 @@ function CustomNode({ id, data }) {
   return (
     <div
       className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-stone-400"
-      style={{ width: "200px", height: "auto" }} // Ensure fixed width for the node
+      style={{ width: "250px", height: "auto" }} // Ensure fixed width for the node
     >
       <div className="flex items-center">
         <div className="ml-2 w-full">
@@ -75,14 +80,53 @@ function CustomNode({ id, data }) {
         </div>
         <button
           className="ml-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onClick={() => data.onAddChild(id)}
+          onClick={() => {
+            data.onAddChild(id)
+            buttonPushed.push(0)
+          }
+        }
+          aria-label="Add connected node"
+        >
+          <PlusCircle className="w-5 h-5 text-blue-500" />
+        </button>
+        <button
+          className="ml-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onClick={() => {
+            data.onAddChild(id)
+            buttonPushed.push(1)
+          }
+        }
+          aria-label="Add connected node"
+        >
+          <PlusCircle className="w-5 h-5 text-blue-500" />
+        </button>
+        <button
+          className="ml-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onClick={() => {
+            data.onAddChild(id)
+            buttonPushed.push(2)
+          }
+        }
+          aria-label="Add connected node"
+        >
+          <PlusCircle className="w-5 h-5 text-blue-500" />
+        </button>
+        <button
+          className="ml-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onClick={() => {
+            data.onAddChild(id)
+            buttonPushed.push(3)
+          }
+        }
           aria-label="Add connected node"
         >
           <PlusCircle className="w-5 h-5 text-blue-500" />
         </button>
       </div>
-      <Handle type="source" position={Position.Right} />
-      <Handle type="target" position={Position.Left} />
+      <Handle id="right" type="source" position={Position.Right} />
+      <Handle id="left" type="target" position={Position.Left} />
+      <Handle id="top" type="source" position={Position.Top} />
+      <Handle id="bottom" type="target" position={Position.Bottom} />
     </div>
   );
 }
@@ -99,7 +143,7 @@ export default function CanvasPage() {
     (params) => {
       console.log("Connecting:", params);
       setEdges((eds) =>
-        addEdge({ ...params, animated: true, type: "smoothstep" }, eds)
+        addEdge({ ...params }, eds)
       );
     },
     [setEdges]
@@ -115,13 +159,31 @@ export default function CanvasPage() {
         (edge) => edge.source === parentId
       ).length;
 
-      const nodeSpacingX = 200; // Horizontal spacing for new nodes
+      const nodeSpacingX = 300; // Horizontal spacing for new nodes
       const baseNodeSpacingY = 100; // Base vertical spacing for nodes
 
       let newNodePosition;
+      let buttonP = buttonPushed.at(buttonPushed.length-1);
 
-      if (childNodeCount === 0) {
         // First child node, place directly to the right
+        if(buttonP == 1 && topC.length == 0) {
+        newNodePosition = {
+          x: parentNode.position.x,
+          y: parentNode.position.y + 200, // Same Y-axis as parent
+        };
+        topC.push(1);
+      } else if(buttonP == 2 && leftC.length == 1 ){
+        newNodePosition = {
+          x: parentNode.position.x,
+          y: parentNode.position.y - 200, // Same Y-axis as parent
+        };
+      } else if(buttonP == 3){
+        newNodePosition = {
+          x: parentNode.position.x - nodeSpacingX - 50,
+          y: parentNode.position.y, // Same Y-axis as parent
+        };
+      }
+      else if(buttonP == 0){
         newNodePosition = {
           x: parentNode.position.x + nodeSpacingX + 50,
           y: parentNode.position.y, // Same Y-axis as parent
@@ -132,7 +194,7 @@ export default function CanvasPage() {
         const yOffset =
           direction * baseNodeSpacingY * Math.floor((childNodeCount + 1) / 2);
         newNodePosition = {
-          x: parentNode.position.x + nodeSpacingX, // Always position to the right
+          x: parentNode.position.x + nodeSpacingX + 50, // Always position to the right
           y: parentNode.position.y + yOffset, // Larger top or bottom based on count
         };
       }
@@ -150,8 +212,6 @@ export default function CanvasPage() {
         id: `e${parentId}-${newNodeId}`,
         source: parentId,
         target: newNodeId,
-        type: "smoothstep",
-        animated: true, // Animation for better visualization of edge connection
       };
 
       // Update the state with the new node and edge
