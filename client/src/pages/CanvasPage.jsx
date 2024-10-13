@@ -18,17 +18,11 @@ const initialNodes = [
     type: "custom",
     data: { label: "Main Idea" },
     position: { x: 0, y: 0 },
-    sourcePosition: Position.Right,
-    targetPosition: Position.Left,
   },
 ];
-const buttonPushed = []
-const topC = []
-const bottomC = []
-const rightC = []
-const leftC = []
 
 const initialEdges = [];
+const buttonPressed = [];
 
 function CustomNode({ id, data }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -81,8 +75,8 @@ function CustomNode({ id, data }) {
         <button
           className="ml-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           onClick={() => {
+            buttonPressed.push(0)
             data.onAddChild(id)
-            buttonPushed.push(0)
           }
         }
           aria-label="Add connected node"
@@ -92,8 +86,8 @@ function CustomNode({ id, data }) {
         <button
           className="ml-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           onClick={() => {
+            buttonPressed.push(1)
             data.onAddChild(id)
-            buttonPushed.push(1)
           }
         }
           aria-label="Add connected node"
@@ -103,8 +97,8 @@ function CustomNode({ id, data }) {
         <button
           className="ml-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           onClick={() => {
+            buttonPressed.push(2)
             data.onAddChild(id)
-            buttonPushed.push(2)
           }
         }
           aria-label="Add connected node"
@@ -114,8 +108,8 @@ function CustomNode({ id, data }) {
         <button
           className="ml-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           onClick={() => {
+            buttonPressed.push(3)
             data.onAddChild(id)
-            buttonPushed.push(3)
           }
         }
           aria-label="Add connected node"
@@ -163,30 +157,43 @@ export default function CanvasPage() {
       const baseNodeSpacingY = 100; // Base vertical spacing for nodes
 
       let newNodePosition;
-      let buttonP = buttonPushed.at(buttonPushed.length-1);
+      let buttonP = buttonPressed.at(buttonPressed.length-1)
+
+      if(buttonP == 1 || buttonP == 2 || buttonP == 3){
+        if(buttonP == 1){
+          newNodePosition = {
+            x: parentNode.position.x, // Always position to the right
+            y: parentNode.position.y + 200 , // Larger top or bottom based on count
+          };
+        }
+        else if(buttonP == 2){
+          newNodePosition = {
+            x: parentNode.position.x - nodeSpacingX - 50, // Always position to the right
+            y: parentNode.position.y , // Larger top or bottom based on count
+          };
+        } 
+        else if(buttonP == 3){
+          newNodePosition = {
+            x: parentNode.position.x, // Always position to the right
+            y: parentNode.position.y - 200 , // Larger top or bottom based on count
+          };
+        }
+        const newNode = {
+          id: newNodeId,
+          type: "custom",
+          data: { label: `Node ${newNodeId}` },
+          position: newNodePosition,
+          sourcePosition: Position.Right,
+          targetPosition: Position.Left,
+        };
+        setNodes((nds) => nds.concat(newNode));
+      } else{
 
         // First child node, place directly to the right
-        if(buttonP == 1 && topC.length == 0) {
+      if(childNodeCount === 0){
         newNodePosition = {
-          x: parentNode.position.x,
-          y: parentNode.position.y + 200, // Same Y-axis as parent
-        };
-        topC.push(1);
-      } else if(buttonP == 2 && leftC.length == 1 ){
-        newNodePosition = {
-          x: parentNode.position.x,
-          y: parentNode.position.y - 200, // Same Y-axis as parent
-        };
-      } else if(buttonP == 3){
-        newNodePosition = {
-          x: parentNode.position.x - nodeSpacingX - 50,
-          y: parentNode.position.y, // Same Y-axis as parent
-        };
-      }
-      else if(buttonP == 0){
-        newNodePosition = {
-          x: parentNode.position.x + nodeSpacingX + 50,
-          y: parentNode.position.y, // Same Y-axis as parent
+          x: parentNode.position.x + nodeSpacingX + 50, // Always position to the right
+          y: parentNode.position.y , // Larger top or bottom based on count
         };
       } else {
         // For additional child nodes, calculate a larger yOffset
@@ -198,7 +205,6 @@ export default function CanvasPage() {
           y: parentNode.position.y + yOffset, // Larger top or bottom based on count
         };
       }
-
       const newNode = {
         id: newNodeId,
         type: "custom",
@@ -217,7 +223,8 @@ export default function CanvasPage() {
       // Update the state with the new node and edge
       setNodes((nds) => nds.concat(newNode));
       setEdges((eds) => eds.concat(newEdge));
-    },
+    }
+  },
     [nodes, edges, setNodes, setEdges]
   );
 
