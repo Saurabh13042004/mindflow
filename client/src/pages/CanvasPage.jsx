@@ -1,4 +1,6 @@
 import React, { useState, useCallback } from "react";
+import { toPng } from 'html-to-image';
+
 import ReactFlow, {
   addEdge,
   useNodesState,
@@ -27,6 +29,7 @@ const buttonPressed = [];
 function CustomNode({ id, data }) {
   const [isEditing, setIsEditing] = useState(false);
   const [label, setLabel] = useState(data.label);
+  const [showButtons, setShowButtons] = useState(false); // State to show/hide buttons
 
   const handleDoubleClick = () => {
     setIsEditing(true);
@@ -41,10 +44,15 @@ function CustomNode({ id, data }) {
     setLabel(event.target.value);
   };
 
+  const handleClick = () => {
+    setShowButtons(!showButtons); // Toggle buttons visibility
+  };
+
   return (
     <div
-      className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-stone-400"
+      className="relative px-4 py-2 shadow-md rounded-md bg-white border-2 border-stone-400"
       style={{ width: "250px", height: "auto" }} // Ensure fixed width for the node
+      onClick={handleClick}
     >
       <div className="flex items-center">
         <div className="ml-2 w-full">
@@ -66,60 +74,70 @@ function CustomNode({ id, data }) {
                 overflow: "hidden",
                 whiteSpace: "nowrap",
                 textOverflow: "ellipsis",
-              }} // Prevent content overflo
+              }} // Prevent content overflow
             >
               {label}
             </div>
           )}
         </div>
-        <button
-          className="ml-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onClick={() => {
-            buttonPressed.push(0)
-            data.onAddChild(id)
-          }
-        }
-          aria-label="Add connected node"
-        >
-          <PlusCircle className="w-5 h-5 text-blue-500" />
-        </button>
-        <button
-          className="ml-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onClick={() => {
-            buttonPressed.push(1)
-            data.onAddChild(id)
-          }
-        }
-          aria-label="Add connected node"
-        >
-          <PlusCircle className="w-5 h-5 text-blue-500" />
-        </button>
-        <button
-          className="ml-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onClick={() => {
-            buttonPressed.push(2)
-            data.onAddChild(id)
-          }
-        }
-          aria-label="Add connected node"
-        >
-          <PlusCircle className="w-5 h-5 text-blue-500" />
-        </button>
-        <button
-          className="ml-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onClick={() => {
-            buttonPressed.push(3)
-            data.onAddChild(id)
-          }
-        }
-          aria-label="Add connected node"
-        >
-          <PlusCircle className="w-5 h-5 text-blue-500" />
-        </button>
       </div>
+
+      {/* Conditional rendering of buttons */}
+      {showButtons && (
+        <>
+          <button
+            className="absolute -top-7 left-1/2 transform -translate-x-1/2 p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+            onClick={() => {
+              buttonPressed.push("top");
+              data.onAddChild(id);
+            }}
+            aria-label="Add connected node top"
+          >
+            <PlusCircle className="w-5 h-5 text-blue-500" />
+          </button>
+          <button
+            className="absolute -bottom-7 left-1/2 transform -translate-x-1/2 p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+            onClick={() => {
+              buttonPressed.push("bottom");
+              data.onAddChild(id);
+            }}
+            aria-label="Add connected node bottom"
+          >
+            <PlusCircle className="w-5 h-5 text-blue-500" />
+          </button>
+          <button
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+            onClick={() => {
+              buttonPressed.push("right");
+              data.onAddChild(id);
+            }}
+            aria-label="Add connected node right"
+          >
+            <PlusCircle className="w-5 h-5 text-blue-500" />
+          </button>
+          <button
+            className="absolute -left-7 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+            onClick={() => {
+              buttonPressed.push("left");
+              data.onAddChild(id);
+            }}
+            aria-label="Add connected node left"
+          >
+            <PlusCircle className="w-5 h-5 text-blue-500" />
+          </button>
+        </>
+      )}
+
       <Handle id="right" type="source" position={Position.Right} />
+      <Handle id="right" type="target" position={Position.Right} />
+
       <Handle id="left" type="target" position={Position.Left} />
+      <Handle id="left" type="source" position={Position.Left} />
+
+      <Handle id="top" type="target" position={Position.Top} />
       <Handle id="top" type="source" position={Position.Top} />
+
+      <Handle id="bottom" type="source" position={Position.Bottom} />
       <Handle id="bottom" type="target" position={Position.Bottom} />
     </div>
   );
@@ -136,9 +154,7 @@ export default function CanvasPage() {
   const onConnect = useCallback(
     (params) => {
       console.log("Connecting:", params);
-      setEdges((eds) =>
-        addEdge({ ...params }, eds)
-      );
+      setEdges((eds) => addEdge({ ...params }, eds));
     },
     [setEdges]
   );
@@ -147,137 +163,152 @@ export default function CanvasPage() {
     (parentId) => {
       const parentNode = nodes.find((node) => node.id === parentId);
       if (!parentNode) return;
-
+  
       const newNodeId = (nodes.length + 1).toString();
-      const childNodeCount = edges.filter(
-        (edge) => edge.source === parentId
-      ).length;
-
       const nodeSpacingX = 300; // Horizontal spacing for new nodes
-      const baseNodeSpacingY = 100; // Base vertical spacing for nodes
-
+      const baseNodeSpacingY = 200; // Vertical spacing for nodes
+  
+      const direction = buttonPressed.pop();
       let newNodePosition;
-      let buttonP = buttonPressed.at(buttonPressed.length-1)
-
-      if(buttonP == 1 || buttonP == 2 || buttonP == 3){
-        if(buttonP == 1){
-          newNodePosition = {
-            x: parentNode.position.x, // Always position to the right
-            y: parentNode.position.y + 200 , // Larger top or bottom based on count
-          };
-        }
-        else if(buttonP == 2){
-          newNodePosition = {
-            x: parentNode.position.x - nodeSpacingX - 50, // Always position to the right
-            y: parentNode.position.y , // Larger top or bottom based on count
-          };
-        } 
-        else if(buttonP == 3){
-          newNodePosition = {
-            x: parentNode.position.x, // Always position to the right
-            y: parentNode.position.y - 200 , // Larger top or bottom based on count
-          };
-        }
-        const newNode = {
-          id: newNodeId,
-          type: "custom",
-          data: { label: `Node ${newNodeId}` },
-          position: newNodePosition,
-          sourcePosition: Position.Right,
-          targetPosition: Position.Left,
-        };
-        setNodes((nds) => nds.concat(newNode));
-      } else{
-
-        // First child node, place directly to the right
-      if(childNodeCount === 0){
+      let sourcePosition = Position.Right; // Default for the new node
+      let targetPosition = Position.Left; // Default for the parent node
+      let sourceHandle = 'right'; // Default source handle
+      let targetHandle = 'left'; // Default target handle
+  
+      // Adjust the position and handles based on the direction
+      if (direction === "top") {
         newNodePosition = {
-          x: parentNode.position.x + nodeSpacingX + 50, // Always position to the right
-          y: parentNode.position.y , // Larger top or bottom based on count
+          x: parentNode.position.x,
+          y: parentNode.position.y - baseNodeSpacingY,
         };
+        sourcePosition = Position.Bottom;
+        targetPosition = Position.Top;
+        sourceHandle = 'top';
+        targetHandle = 'bottom';
+      } else if (direction === "bottom") {
+        newNodePosition = {
+          x: parentNode.position.x,
+          y: parentNode.position.y + baseNodeSpacingY,
+        };
+        sourcePosition = Position.Top;
+        targetPosition = Position.Bottom;
+        sourceHandle = 'bottom';
+        targetHandle = 'top';
+      } else if (direction === "left") {
+        newNodePosition = {
+          x: parentNode.position.x - nodeSpacingX,
+          y: parentNode.position.y,
+        };
+        sourcePosition = Position.Right;
+        targetPosition = Position.Left;
+        sourceHandle = 'left';
+        targetHandle = 'right';
       } else {
-        // For additional child nodes, calculate a larger yOffset
-        const direction = childNodeCount % 2 === 0 ? -1 : 1; // Alternate between top (-1) and bottom (1)
-        const yOffset =
-          direction * baseNodeSpacingY * Math.floor((childNodeCount + 1) / 2);
+        // Default is right
         newNodePosition = {
-          x: parentNode.position.x + nodeSpacingX + 50, // Always position to the right
-          y: parentNode.position.y + yOffset, // Larger top or bottom based on count
+          x: parentNode.position.x + nodeSpacingX,
+          y: parentNode.position.y,
         };
+        sourcePosition = Position.Left;
+        targetPosition = Position.Right;
+        sourceHandle = 'right';
+        targetHandle = 'left';
       }
+  
       const newNode = {
         id: newNodeId,
         type: "custom",
         data: { label: `Node ${newNodeId}` },
         position: newNodePosition,
-        sourcePosition: Position.Right,
-        targetPosition: Position.Left,
+        sourcePosition,
+        targetPosition,
       };
-
+  
       const newEdge = {
         id: `e${parentId}-${newNodeId}`,
         source: parentId,
         target: newNodeId,
+        sourceHandle, // Correctly set source handle
+        targetHandle, // Correctly set target handle
       };
-
-      // Update the state with the new node and edge
+  
       setNodes((nds) => nds.concat(newNode));
       setEdges((eds) => eds.concat(newEdge));
-    }
-  },
+    },
     [nodes, edges, setNodes, setEdges]
   );
+
+  // Function to download the current graph as a png image
+  const onExport = useCallback(() => {
+    const reactFlowWrapper = document.getElementById("reactflow-wrapper");
+  
+    if (reactFlowWrapper) {
+      toPng(reactFlowWrapper)
+        .then((dataUrl) => {
+          const a = document.createElement("a");
+          a.href = dataUrl;
+          a.download = "graph.png";
+          a.click();
+        })
+        .catch((error) => {
+          console.error("Error exporting image:", error);
+        });
+    } else {
+      console.error("React Flow wrapper not found!");
+    }
+  }, []);
+
+  // Function to delete any node / edge which is selected
+  const onDelete = useCallback(() => {
+    const selectedNodes = nodes.filter((node) => node.selected);
+    const selectedEdges = edges.filter((edge) => edge.selected);
+
+    if (selectedNodes.length > 0) {
+      setNodes((nds) => nds.filter((node) => !node.selected));
+    }
+
+    if (selectedEdges.length > 0) {
+      setEdges((eds) => eds.filter((edge) => !edge.selected));
+    }
+  }, [nodes, edges, setNodes, setEdges]);
+
+  
+  // Function to add new node on clicking the add node button
+  const onAddNode = useCallback(() => {
+    const newNodeId = (nodes.length + 1).toString();
+    const newNode = {
+      id: newNodeId,
+      type: "custom",
+      data: { label: `Node ${newNodeId}` },
+      position: { x: 0, y: 0 },
+    };
+    setNodes((nds) => nds.concat(newNode));
+  }, [nodes, setNodes]);
+
+
+
+  // Function to save the current graph to local storage
+  const onSave = useCallback(() => {
+    localStorage.setItem("nodes", JSON.stringify(nodes));
+    localStorage.setItem("edges", JSON.stringify(edges));
+  }, [nodes, edges]);
 
   const onLabelChange = useCallback(
     (nodeId, newLabel) => {
       setNodes((nds) =>
         nds.map((node) =>
-          node.id === nodeId
-            ? { ...node, data: { ...node.data, label: newLabel } }
-            : node
+          node.id === nodeId ? { ...node, data: { ...node.data, label: newLabel } } : node
         )
       );
     },
     [setNodes]
   );
 
-  const handleAddNode = () => {
-    const newNodeId = (nodes.length + 1).toString();
-    const newNode = {
-      id: newNodeId,
-      type: "custom",
-      data: { label: `Node ${newNodeId}` },
-      position: {
-        x: Math.random() * window.innerWidth - 100,
-        y: Math.random() * window.innerHeight - 100,
-      },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-    };
 
-    setNodes((nds) => nds.concat(newNode));
-  };
-
-  const handleDeleteNode = () => {
-    console.log("Delete node functionality not implemented");
-  };
-
-  const handleSave = () => {
-    console.log("Save functionality not implemented");
-  };
-
-  const handleExport = () => {
-    console.log("Export functionality not implemented");
-  };
 
   return (
-    <div className="w-full h-screen">
-      <Toolbar
-        onAddNode={handleAddNode}
-        onDeleteNode={handleDeleteNode}
-        onSave={handleSave}
-        onExport={handleExport}
-      />
+    <div id="reactflow-wrapper"className="w-full h-screen">
+      <Toolbar onDelete={onDelete} onAddNode={onAddNode} onSave={onSave}  onExport={onExport} />
 
       <ReactFlow
         nodes={nodes.map((node) => ({
