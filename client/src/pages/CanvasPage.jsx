@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { toPng } from 'html-to-image';
+import { toPng } from "html-to-image";
 
 import ReactFlow, {
   addEdge,
@@ -50,8 +50,9 @@ function CustomNode({ id, data }) {
 
   return (
     <div
-      className="relative px-4 py-2 shadow-md rounded-md bg-white border-2 border-stone-400"
-      style={{ width: "250px", height: "auto" }} // Ensure fixed width for the node
+      className="relative px-6 py-3 shadow-lg rounded-lg bg-white/95 border-2 border-blue-200 
+  hover:border-blue-400 transition-all duration-200 backdrop-blur-sm"
+      style={{ width: "280px", minHeight: "60px" }}
       onClick={handleClick}
     >
       <div className="flex items-center">
@@ -62,19 +63,16 @@ function CustomNode({ id, data }) {
               value={label}
               onChange={handleInputChange}
               onBlur={handleInputBlur}
-              className="bg-white border-2 border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-              style={{ width: "100%" }} // Ensure the input field has a fixed width
+              className="w-full px-3 py-2 bg-white/50 border-2 border-blue-200 rounded-md 
+  focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent
+  transition-all duration-200"
               autoFocus
             />
           ) : (
             <div
-              className="text-lg font-bold w-full cursor-pointer"
+              className="text-lg font-semibold text-gray-700 w-full cursor-pointer 
+  transition-colors duration-200 hover:text-blue-600 truncate"
               onDoubleClick={handleDoubleClick}
-              style={{
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-              }} // Prevent content overflow
             >
               {label}
             </div>
@@ -86,44 +84,47 @@ function CustomNode({ id, data }) {
       {showButtons && (
         <>
           <button
-            className="absolute -top-7 left-1/2 transform -translate-x-1/2 p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+            className="absolute -top-8 left-1/2 transform -translate-x-1/2 p-2 
+  rounded-full bg-white/90 hover:bg-blue-50 shadow-md transition-all 
+  duration-200 hover:scale-110 focus:outline-none group"
             onClick={() => {
               buttonPressed.push("top");
               data.onAddChild(id);
             }}
             aria-label="Add connected node top"
           >
-            <PlusCircle className="w-5 h-5 text-blue-500" />
+            <PlusCircle className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
           </button>
           <button
-            className="absolute -bottom-7 left-1/2 transform -translate-x-1/2 p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+            className="absolute -bottom-7 left-1/2 transform -translate-x-1/2 p-2 rounded-full bg-white/90 hover:bg-blue-50 shadow-md transition-all 
+  duration-200 hover:scale-110 focus:outline-none group"
             onClick={() => {
               buttonPressed.push("bottom");
               data.onAddChild(id);
             }}
             aria-label="Add connected node bottom"
           >
-            <PlusCircle className="w-5 h-5 text-blue-500" />
+      <PlusCircle className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
           </button>
           <button
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2  p-2 rounded-full bg-white/90 hover:bg-blue-50 shadow-md transition-all "
             onClick={() => {
               buttonPressed.push("right");
               data.onAddChild(id);
             }}
             aria-label="Add connected node right"
           >
-            <PlusCircle className="w-5 h-5 text-blue-500" />
+             <PlusCircle className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
           </button>
           <button
-            className="absolute -left-7 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+            className="absolute -left-7 top-1/2 transform -translate-y-1/2   duration-200 hover:scale-110 focus:outline-none group"
             onClick={() => {
               buttonPressed.push("left");
               data.onAddChild(id);
             }}
             aria-label="Add connected node left"
           >
-            <PlusCircle className="w-5 h-5 text-blue-500" />
+             <PlusCircle className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
           </button>
         </>
       )}
@@ -163,18 +164,18 @@ export default function CanvasPage() {
     (parentId) => {
       const parentNode = nodes.find((node) => node.id === parentId);
       if (!parentNode) return;
-  
+
       const newNodeId = (nodes.length + 1).toString();
       const nodeSpacingX = 300; // Horizontal spacing for new nodes
       const baseNodeSpacingY = 200; // Vertical spacing for nodes
-  
+
       const direction = buttonPressed.pop();
       let newNodePosition;
       let sourcePosition = Position.Right; // Default for the new node
       let targetPosition = Position.Left; // Default for the parent node
-      let sourceHandle = 'right'; // Default source handle
-      let targetHandle = 'left'; // Default target handle
-  
+      let sourceHandle = "right"; // Default source handle
+      let targetHandle = "left"; // Default target handle
+
       // Adjust the position and handles based on the direction
       if (direction === "top") {
         newNodePosition = {
@@ -183,8 +184,8 @@ export default function CanvasPage() {
         };
         sourcePosition = Position.Bottom;
         targetPosition = Position.Top;
-        sourceHandle = 'top';
-        targetHandle = 'bottom';
+        sourceHandle = "top";
+        targetHandle = "bottom";
       } else if (direction === "bottom") {
         newNodePosition = {
           x: parentNode.position.x,
@@ -192,8 +193,8 @@ export default function CanvasPage() {
         };
         sourcePosition = Position.Top;
         targetPosition = Position.Bottom;
-        sourceHandle = 'bottom';
-        targetHandle = 'top';
+        sourceHandle = "bottom";
+        targetHandle = "top";
       } else if (direction === "left") {
         newNodePosition = {
           x: parentNode.position.x - nodeSpacingX,
@@ -201,8 +202,8 @@ export default function CanvasPage() {
         };
         sourcePosition = Position.Right;
         targetPosition = Position.Left;
-        sourceHandle = 'left';
-        targetHandle = 'right';
+        sourceHandle = "left";
+        targetHandle = "right";
       } else {
         // Default is right
         newNodePosition = {
@@ -211,10 +212,10 @@ export default function CanvasPage() {
         };
         sourcePosition = Position.Left;
         targetPosition = Position.Right;
-        sourceHandle = 'right';
-        targetHandle = 'left';
+        sourceHandle = "right";
+        targetHandle = "left";
       }
-  
+
       const newNode = {
         id: newNodeId,
         type: "custom",
@@ -223,7 +224,7 @@ export default function CanvasPage() {
         sourcePosition,
         targetPosition,
       };
-  
+
       const newEdge = {
         id: `e${parentId}-${newNodeId}`,
         source: parentId,
@@ -231,7 +232,7 @@ export default function CanvasPage() {
         sourceHandle, // Correctly set source handle
         targetHandle, // Correctly set target handle
       };
-  
+
       setNodes((nds) => nds.concat(newNode));
       setEdges((eds) => eds.concat(newEdge));
     },
@@ -241,7 +242,7 @@ export default function CanvasPage() {
   // Function to download the current graph as a png image
   const onExport = useCallback(() => {
     const reactFlowWrapper = document.getElementById("reactflow-wrapper");
-  
+
     if (reactFlowWrapper) {
       toPng(reactFlowWrapper)
         .then((dataUrl) => {
@@ -272,7 +273,6 @@ export default function CanvasPage() {
     }
   }, [nodes, edges, setNodes, setEdges]);
 
-  
   // Function to add new node on clicking the add node button
   const onAddNode = useCallback(() => {
     const newNodeId = (nodes.length + 1).toString();
@@ -285,8 +285,6 @@ export default function CanvasPage() {
     setNodes((nds) => nds.concat(newNode));
   }, [nodes, setNodes]);
 
-
-
   // Function to save the current graph to local storage
   const onSave = useCallback(() => {
     localStorage.setItem("nodes", JSON.stringify(nodes));
@@ -297,18 +295,26 @@ export default function CanvasPage() {
     (nodeId, newLabel) => {
       setNodes((nds) =>
         nds.map((node) =>
-          node.id === nodeId ? { ...node, data: { ...node.data, label: newLabel } } : node
+          node.id === nodeId
+            ? { ...node, data: { ...node.data, label: newLabel } }
+            : node
         )
       );
     },
     [setNodes]
   );
 
-
-
   return (
-    <div id="reactflow-wrapper"className="w-full h-screen">
-      <Toolbar onDelete={onDelete} onAddNode={onAddNode} onSave={onSave}  onExport={onExport} />
+    <div
+      id="reactflow-wrapper"
+      className="w-full h-screen bg-gradient-to-br from-blue-50/50 to-purple-50/50"
+    >
+      <Toolbar
+        onDelete={onDelete}
+        onAddNode={onAddNode}
+        onSave={onSave}
+        onExport={onExport}
+      />
 
       <ReactFlow
         nodes={nodes.map((node) => ({
@@ -321,9 +327,10 @@ export default function CanvasPage() {
         onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitView
+        className="bg-gray-50"
       >
-        <Background />
-        <Controls />
+        <Background className="opacity-10" color="#93c5fd" gap={20} size={1} />
+        <Controls className="bg-white/90 shadow-lg rounded-lg border border-blue-100" />{" "}
       </ReactFlow>
     </div>
   );
