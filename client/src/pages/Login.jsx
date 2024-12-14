@@ -96,7 +96,7 @@ const Login = () => {
                 </li>
               </ul>
               <a
-                href="/#"
+                href="/forgot-password"
                 className="mb-2 inline-block text-base text-dark hover:text-primary hover:underline dark:text-white"
               >
                 Forget Password?
@@ -104,7 +104,7 @@ const Login = () => {
               <p className="text-base text-body-color dark:text-dark-6">
                 <span className="pr-0.5">Not a member yet?</span>
                 <a
-                  href="/#"
+                  href="/register"
                   className="text-primary hover:underline"
                 >
                   Sign Up

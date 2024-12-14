@@ -19,7 +19,7 @@ const Hero = () => {
                 <ul className="flex flex-wrap items-center">
                   <li>
                     <a
-                      href="/#"
+                      href="/canvas"
                       className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-center text-base font-medium text-white hover:bg-blue-dark lg:px-7"
                     >
                       Try now!
@@ -156,14 +156,14 @@ const Navbar = () => {
             </div>
             <div className="hidden justify-end pr-16 sm:flex lg:pr-0">
               <a
-                href="/#"
+                href="/login"
                 className="px-7 py-3 text-base font-medium text-dark hover:text-primary dark:text-white"
               >
                 Sign In
               </a>
 
               <a
-                href="/#"
+                href="/register"
                 className="rounded-lg bg-primary px-7 py-3 text-base font-medium text-white hover:bg-opacity-90"
               >
                 Sign Up
