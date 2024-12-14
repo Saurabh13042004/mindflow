@@ -229,8 +229,8 @@ export default function CanvasPage() {
         id: `e${parentId}-${newNodeId}`,
         source: parentId,
         target: newNodeId,
-        sourceHandle, // Correctly set source handle
-        targetHandle, // Correctly set target handle
+        sourceHandle,
+        targetHandle,
       };
 
       setNodes((nds) => nds.concat(newNode));
