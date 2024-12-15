@@ -12,7 +12,7 @@ app.use(cors());
 
 // // Routes
 app.use("/api/users", require("./routes/userRoutes"));
-// app.use("/api/flowcharts", require("./routes/flowchartRoutes"));
+app.use("/api/flowcharts", require("./routes/flowchartRoutes"));
 // app.use("/api/associations", require("./routes/associationRoutes"));
 
 const PORT = process.env.PORT || 4000;
