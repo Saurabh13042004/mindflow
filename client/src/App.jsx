@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import CanvasPage from './pages/CanvasPage';
 import UserDashboard from './pages/UserDashboard';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
@@ -18,9 +19,23 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path='/login' element={<Login/>}/>
             <Route path='/register' element={<Register/>}/>
-            <Route path="/canvas" element={<CanvasPage/>} />
+            <Route
+              path="/canvas"
+              element={
+                <PrivateRoute>
+                  <CanvasPage/>
+                </PrivateRoute>
+              } 
+            />
             <Route path='/forgot-password' element={<ForgotPassword/>}/>
-            <Route path='/dashboard' element={<UserDashboard/>}/>
+            <Route
+              path='/dashboard'
+              element={
+                <PrivateRoute>
+                  <UserDashboard/>
+                </PrivateRoute>
+              }
+            />
           </Routes>
         </div>
       </Router>

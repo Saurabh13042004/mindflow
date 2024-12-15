@@ -1,6 +1,26 @@
-import React from "react";
+import React, { useState } from 'react';
+import axios from 'axios';
 
 const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      console.log(email);
+      const response = await axios.post('http://localhost:4000/api/users/login', { email, password });
+      console.log('Logged in:', response.data);
+      // Save the token in localStorage
+      localStorage.setItem('token', response.data.token);
+      // Redirect to dashboard
+      window.location.href = '/dashboard';
+    } catch (err) {
+      setError(err.response?.data?.message || 'Login failed');
+    }
+  };
+
   return (
     <section className="bg-gray-1 py-20 dark:bg-dark lg:py-[120px]">
       <div className="container mx-auto">
@@ -18,12 +38,20 @@ const Login = () => {
                   />
                 </a>
               </div>
-              <form>
-                <InputBox type="email" name="email" placeholder="Email" />
+              <form onSubmit={handleLogin}>
+                <InputBox
+                  type="email"
+                  name="email"
+                  placeholder="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)} 
+                />
                 <InputBox
                   type="password"
                   name="password"
                   placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <div className="mb-10">
                   <input
@@ -33,6 +61,7 @@ const Login = () => {
                   />
                 </div>
               </form>
+              {error && <p>{error}</p>}
               <p className="mb-6 text-base text-secondary-color dark:text-dark-7">
                 Connect With
               </p>
@@ -339,13 +368,15 @@ const Login = () => {
 
 export default Login;
 
-const InputBox = ({ type, placeholder, name }) => {
+const InputBox = ({ type, placeholder, name, value, onChange }) => {
   return (
     <div className="mb-6">
       <input
         type={type}
         placeholder={placeholder}
         name={name}
+        value={value}
+        onChange={onChange}
         className="w-full rounded-md border border-stroke bg-transparent px-5 py-3 text-base text-body-color outline-none focus:border-primary focus-visible:shadow-none dark:border-dark-3 dark:text-white"
       />
     </div>

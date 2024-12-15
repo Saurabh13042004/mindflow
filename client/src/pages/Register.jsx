@@ -1,6 +1,45 @@
-import React from "react";
+import React, { useState } from "react";
+import axios from "axios";
+
 
 function Register() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const {name, email, password, confirmPassword } = formData;
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:4000/api/users/register", { name, email, password });
+      setSuccess("Registration successful! You can now log in.");
+      setError("");
+    } catch (err) {
+      setError(err.response?.data?.message || "An error occurred. Please try again.");
+    }
+  };
+
   return (
     <div className="w-full max-w-md mx-auto p-6">
       <div className="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-neutral-900 dark:border-neutral-700">
@@ -56,8 +95,42 @@ function Register() {
               Or
             </div>
 
-            <form>
+            {error && <p className="text-red-600 text-sm">{error}</p>}
+            {success && <p className="text-green-600 text-sm">{success}</p>}
+            <form onSubmit={handleSubmit}>
               <div className="grid gap-y-4">
+                <div className="text-start">    
+                  <label
+                    htmlFor="name"
+                    className="block text-sm mb-2 dark:text-white"
+                  >
+                    Name
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="string"
+                      id="name"
+                      name="name"
+                      className="py-3 px-4 block w-full border rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                      required
+                      value={name}
+                      onChange={handleChange}
+                    />
+                    <div className="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                      <svg
+                        className="size-5 text-red-500"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                        aria-hidden="true"
+                      >
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="text-start">    
                   <label
                     htmlFor="email"
@@ -72,6 +145,8 @@ function Register() {
                       name="email"
                       className="py-3 px-4 block w-full border rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                       required
+                      value={email}
+                      onChange={handleChange}
                       aria-describedby="email-error"
                     />
                     <div className="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
@@ -111,6 +186,8 @@ function Register() {
                       className="py-3 px-4 block w-full border rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                       required
                       aria-describedby="password-error"
+                      value={password}
+                      onChange={handleChange}
                     />
                     <div className="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
                       <svg
@@ -144,10 +221,12 @@ function Register() {
                     <input
                       type="password"
                       id="confirm-password"
-                      name="confirm-password"
+                      name="confirmPassword"
                       className="py-3 px-4 block w-full border rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                       required
                       aria-describedby="confirm-password-error"
+                      value={confirmPassword}
+                      onChange={handleChange}
                     />
                     <div className="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
                       <svg
