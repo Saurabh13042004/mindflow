@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from "axios";
+import { registerUser } from '../api/users';
+import { AuthContext } from '../context/authContext';
+import { useNavigate } from 'react-router-dom';
 
 
 function Register() {
@@ -8,19 +11,30 @@ function Register() {
     email: "",
     password: "",
     confirmPassword: "",
+    termsAccepted: false,
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  const {name, email, password, confirmPassword } = formData;
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const {name, email, password, confirmPassword, termsAccepted } = formData;
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
     if (password.length < 8) {
       setError("Password must be at least 8 characters");
       return;
@@ -30,13 +44,23 @@ function Register() {
       setError("Passwords do not match");
       return;
     }
+    if (!termsAccepted) {
+      setError("You must accept the Terms and Conditions to proceed");
+      return;
+    }
 
     try {
-      const response = await axios.post("http://localhost:4000/api/users/register", { name, email, password });
+      setIsLoading(true);
+      const response = await registerUser(formData);
       setSuccess("Registration successful! You can now log in.");
+      if(response.status==201) {
+        setTimeout(() => navigate('/login'), 2000);
+      }
       setError("");
     } catch (err) {
       setError(err.response?.data?.message || "An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -276,9 +300,10 @@ function Register() {
 
                 <button
                   type="submit"
+                  disabled={isLoading}
                   className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
                 >
-                  Sign up
+                  {isLoading? 'Signing up...' : 'Sign up'}
                 </button>
               </div>
             </form>
