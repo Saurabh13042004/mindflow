@@ -30,14 +30,29 @@ const createFlowchart = async (req, res) => {
 
 const getFlowcharts = async (req, res) => {
   try {
-   const associations = await Association.find({ user: req.user.id }).populate("flowchart");
+    const associations = await Association.find({ user: req.user.id })
+    .populate({
+      path: "flowchart",
+      model: "Flowchart", // Ensure this matches your Flowchart model name
+      populate: {
+        path: "owner", // Populate the user field within the flowchart
+        model: "User", // Ensure this matches your User model name
+      },
+    });
 
-    const flowcharts = associations.map((assoc) => assoc.flowchart);
+  // Map through associations to extract both flowchart and user data
+  const flowcharts = associations.map((assoc) => ({
+    flowchart: assoc.flowchart,
+    user: assoc.flowchart.user, // Assuming user field exists in the Flowchart schema
+  }));
 
-    res.status(200).json(flowcharts);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch flowcharts", error: error.message });
-  }
+  res.status(200).json(flowcharts);
+} catch (error) {
+  res.status(500).json({
+    message: "Failed to fetch flowcharts",
+    error: error.message,
+  });
+}
 };
 
 const getFlowchartById = async (req, res) => {
