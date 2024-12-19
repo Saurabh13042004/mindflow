@@ -17,6 +17,6 @@ app.use("/api/comments", require("./routes/commentRoutes"));
 app.use("/api/check-token", require("./routes/checkTokenRoutes"));
 // app.use("/api/associations", require("./routes/associationRoutes"));
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

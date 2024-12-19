@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
+import { healthCheck } from '../api/users';
 import Cookies from 'js-cookie';
-import axios from '../api/axiosInstance';
 
 const RedirectIfLoggedIn = ({ children }) => {
-  const [isTokenValid, setIsTokenValid] = useState(null);
   const token = Cookies.get('token');
+  const [isTokenValid, setIsTokenValid] = useState(null);
   
-  const checkTokenHealth = async (token) => {
+  const checkTokenHealth = async () => {
     try {
-      const response = await axios.post('/check-token', {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      });
+      const response = await healthCheck();
 
       if (response.data.isValid) {
         setIsTokenValid(true);
@@ -28,7 +24,7 @@ const RedirectIfLoggedIn = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      checkTokenHealth(token);
+      checkTokenHealth();
     } else {
       setIsTokenValid(false);
     }
