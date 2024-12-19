@@ -8,3 +8,12 @@ export const getAllFlowcharts = async () => {
     throw error;
   }
 };
+
+export const getFlowchartById = async(id) => {
+  try {
+    const response = await axiosInstance.get(`/flowcharts/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}

@@ -51,7 +51,7 @@ function Table() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">
-                      {item.flowchart.title}
+                      <a href={`/canvas/${item.flowchart._id}`} target='_blank'>{item.flowchart.title}</a>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200 flex items-center gap-x-2">
                       <FaUserCircle className="text-primary text-lg" />
