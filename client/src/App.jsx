@@ -1,4 +1,3 @@
-// App.js
 import './App.css'
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import { ReactFlowProvider  } from '@xyflow/react';
@@ -10,6 +9,7 @@ import CanvasPage from './pages/CanvasPage';
 import UserDashboard from './pages/UserDashboard';
 import PrivateRoute from './components/PrivateRoute';
 import AuthProvider from './context/authContext';
+import RedirectIfLoggedIn from './components/RedirectIfLoggedIn';
 
 const AuthProviderWrapper = ({ children }) => {
   const navigate = useNavigate();
@@ -23,9 +23,30 @@ function App() {
           <AuthProviderWrapper>
           <div className="App" >
             <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path='/login' element={<Login/>}/>
-              <Route path='/register' element={<Register/>}/>
+              <Route 
+                  path="/" 
+                  element={
+                    <RedirectIfLoggedIn>
+                      <LandingPage />
+                    </RedirectIfLoggedIn>
+                  } 
+                />
+                <Route 
+                  path="/login" 
+                  element={
+                    <RedirectIfLoggedIn>
+                      <Login />
+                    </RedirectIfLoggedIn>
+                  } 
+                />
+                <Route 
+                  path="/register" 
+                  element={
+                    <RedirectIfLoggedIn>
+                      <Register />
+                    </RedirectIfLoggedIn>
+                  } 
+                />
               <Route
                 path="/canvas/:id"
                 element={
