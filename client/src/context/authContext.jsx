@@ -14,7 +14,7 @@ const AuthProvider = ({ children, navigate }) => {
   }, []);
 
   const login = (newToken) => {
-    Cookies.set("token", newToken, { expires: 7 });
+    Cookies.set("token", newToken, { expires: 1 });
     setUser({ name: "John Doe", email: "john@example.com" });
   };
 

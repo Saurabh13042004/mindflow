@@ -17,3 +17,27 @@ export const getFlowchartById = async(id) => {
     throw error;
   }
 }
+
+export const createFlowchart = async(data) => {
+  try{
+    const response = await axiosInstance.post(
+      '/flowcharts',
+      data
+    );
+    return response.data;
+  } catch (e) {
+    throw error;
+  }
+}
+
+export const updateFlowChartbyId = async(id, data) => {
+  try{
+    const response = await axiosInstance.put(
+      `/flowcharts/${id}`,
+      data
+    );
+    return response.data;
+  } catch (e) {
+    throw error;
+  }
+}
