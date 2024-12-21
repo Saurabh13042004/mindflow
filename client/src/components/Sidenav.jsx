@@ -467,13 +467,12 @@ function Sidenav() {
       {/* Block 1: Create a Blank File */}
       <div className="flex flex-col items-center p-6 bg-white border border-t-4 border-t-blue-600 shadow-sm rounded-xl transition-transform transform hover:scale-105 cursor-pointer">
         <FaFileAlt className="text-primary text-5xl mb-4" />
-        <Link to='/canvas' className="text-lg font-semibold text-gray-800 dark:text-white">Create a Blank File</Link>
+        <Link to='/canvas/new' className="text-lg font-semibold text-gray-800 dark:text-white">Create a Blank File</Link>
 
         <a 
           href="#" 
           className="mt-4 text-sm font-semibold text-blue-600 hover:text-blue-700 focus:outline-none focus:text-blue-700"
         >
-          Learn More
           <svg className="inline-block ml-1 w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 18l6-6-6-6"></path>
           </svg>

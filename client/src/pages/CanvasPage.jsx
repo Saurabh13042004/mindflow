@@ -344,6 +344,7 @@ export default function CanvasPage() {
 
         if(id==="new") {
           setTitle('New Flowchart')
+          setIsViewer(false)
         } else {
 
           const res  = await getFlowchartById(id)
