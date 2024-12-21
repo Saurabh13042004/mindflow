@@ -8,6 +8,9 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [ require('preline/plugin'), require("tailgrids/plugin")],
+  darkMode: 'class', // Use class-based dark mode instead of system preference
+  plugins: [ 
+    require('preline/plugin'), 
+    require("tailgrids/plugin")
+  ],
 }
-
