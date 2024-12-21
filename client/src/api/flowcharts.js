@@ -25,7 +25,7 @@ export const createFlowchart = async(data) => {
       data
     );
     return response.data;
-  } catch (e) {
+  } catch (error) {
     throw error;
   }
 }
@@ -37,7 +37,18 @@ export const updateFlowChartbyId = async(id, data) => {
       data
     );
     return response.data;
-  } catch (e) {
+  } catch (error) {
     throw error;
+  }
+}
+
+export const deleteFlowChart = async(id) => {
+  try {
+    const response = await axiosInstance.delete(
+      `flowcharts/${id}`
+    )
+    return response
+  } catch (error) {
+    throw error.response;
   }
 }

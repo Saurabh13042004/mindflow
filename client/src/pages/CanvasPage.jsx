@@ -161,9 +161,11 @@ export default function CanvasPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewer, setIsViewer] = useState(true);
 
   const onConnect = useCallback(
     (params) => {
+      if(isViewer) return;
       setEdges((eds) => addEdge({ ...params }, eds));
     },
     [setEdges]
@@ -171,6 +173,7 @@ export default function CanvasPage() {
 
   const addChildNode = useCallback(
     (parentId) => {
+      if(isViewer) return;
       const parentNode = nodes.find((node) => node.id === parentId);
       if (!parentNode) return;
 
@@ -270,6 +273,7 @@ export default function CanvasPage() {
 
   // Function to delete any node / edge which is selected
   const onDelete = useCallback(() => {
+    if (isViewer) return;
     const selectedNodes = nodes.filter((node) => node.selected);
     const selectedEdges = edges.filter((edge) => edge.selected);
 
@@ -284,6 +288,7 @@ export default function CanvasPage() {
 
   // Function to add new node on clicking the add node button
   const onAddNode = useCallback(() => {
+    if(isViewer) return;
     const newNodeId = (nodes.length + 1).toString();
     const newNode = {
       id: newNodeId,
@@ -296,6 +301,7 @@ export default function CanvasPage() {
 
   // Function to save the current graph to local storage
   const onSave = useCallback(() => {
+    if(isViewer) return;
     setIsModalOpen(true);
   })
 
@@ -318,6 +324,7 @@ export default function CanvasPage() {
 
   const onLabelChange = useCallback(
     (nodeId, newLabel) => {
+      if(isViewer) return;
       setNodes((nds) =>
         nds.map((node) =>
           node.id === nodeId
@@ -339,10 +346,12 @@ export default function CanvasPage() {
           setTitle('New Flowchart')
         } else {
 
-          const { nodes: fetchedNodes, edges: fetchedEdges, title: flowChartTitle } = await getFlowchartById(id);
+          const res  = await getFlowchartById(id)
+          const {nodes: fetchedNodes, edges: fetchedEdges, title: flowChartTitle} = res?.flowchart
           setNodes(fetchedNodes);
           setEdges(fetchedEdges);
           setTitle(flowChartTitle);
+          setIsViewer(res?.role==='viewer')
         }
       } catch (err) {
         setError("Failed to load flowchart.");

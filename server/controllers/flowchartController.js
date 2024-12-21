@@ -37,13 +37,14 @@ const getFlowcharts = async (req, res) => {
       populate: {
         path: "owner", // Populate the user field within the flowchart
         model: "User", // Ensure this matches your User model name
+        select: "name "
       },
-    });
+    }).select('role');
 
-  // Map through associations to extract both flowchart and user data
   const flowcharts = associations.map((assoc) => ({
     flowchart: assoc.flowchart,
-    user: assoc.flowchart.user, // Assuming user field exists in the Flowchart schema
+    user: assoc.flowchart.user, 
+    role: assoc.role// Assuming user field exists in the Flowchart schema
   }));
 
   res.status(200).json(flowcharts);
@@ -62,13 +63,13 @@ const getFlowchartById = async (req, res) => {
     const association = await Association.findOne({
       user: req.user.id,
       flowchart: id,
-    }).populate("flowchart");
+    }).populate("flowchart").select('role');
 
     if (!association) {
       return res.status(403).json({ message: "Access denied to this flowchart" });
     }
 
-    res.status(200).json(association.flowchart);
+    res.status(200).json(association);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch flowchart", error: error.message });
   }

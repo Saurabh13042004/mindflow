@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FaFile, FaFolder, FaEllipsisV, FaUserCircle } from 'react-icons/fa';
-import { getAllFlowcharts } from '../api/flowcharts';
+import { deleteFlowChart, getAllFlowcharts } from '../api/flowcharts';
 
 function Table() {
   const [flowcharts, setFlowcharts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [openDropdown, setOpenDropdown] = useState(null); // State to track which dropdown is open
 
   useEffect(() => {
     const fetchFlowcharts = async () => {
@@ -22,6 +23,31 @@ function Table() {
     fetchFlowcharts();
   }, []);
 
+  const handleDropdownToggle = (index) => {
+    setOpenDropdown((prev) => (prev === index ? null : index)); // Toggle dropdown visibility
+  };
+
+  const handleEdit = (flowchartId) => {
+    window.location.href = `canvas/${flowchartId}`;
+  };
+
+  const handleDelete = async (flowchartId) => {
+    const userConfirmed = window.confirm("Are you sure you want to delete this flowchart? This action cannot be undone.");
+    if (userConfirmed) {
+      try {
+        const status = await deleteFlowChart(flowchartId);
+        if (status === 200) {
+          window.alert('Flowchart deleted successfully');
+          window.location.reload();
+        }
+      } catch (e) {
+        console.error(e);
+        window.alert(e.data.message);
+      }
+    }
+  };
+  
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
@@ -37,7 +63,7 @@ function Table() {
                   <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">File/Folder Name</th>
                   <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Author</th>
                   <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Created</th>
-                  <th scope="col" className="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Share</th>
+                  <th scope="col" className="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-neutral-700">
@@ -60,8 +86,29 @@ function Table() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">
                       {new Date(item.flowchart.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
-                      <FaEllipsisV className="text-gray-500 dark:text-neutral-500 cursor-pointer" />
+                    <td className="px-6 py-4 whitespace-nowrap text-end text-sm font-medium relative">
+                      <FaEllipsisV
+                        className="text-gray-500 dark:text-neutral-500 cursor-pointer"
+                        onClick={() => handleDropdownToggle(index)}
+                      />
+                      {openDropdown === index && (
+                        <div className="fixed flex flex-col mt-2 w-28 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded shadow-lg z-10">
+                          <button
+                            className="w-full px-4 py-2 text-left text-sm text-gray-800 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700"
+                            onClick={() => handleEdit(item.flowchart._id)}
+                            disabled={item.role === 'viewer'}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="w-full px-4 py-2 text-left text-sm text-gray-800 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700"
+                            onClick={() => handleDelete(item.flowchart._id)}
+                            disabled={item.role !== 'owner'}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
