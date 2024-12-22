@@ -1,134 +1,93 @@
-import React from 'react';
+import React, { useState } from 'react';
+import axios from '../api/axiosInstance';
+import { changeName, changePassword, healthCheck } from '../api/users';
 
 const UserAccount = () => {
+    const [name, setName] = useState('');
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [message, setMessage] = useState('');
+
+    const handleNameChange = async () => {
+        try {
+            const healthCheckStatus = await healthCheck();
+            if (healthCheckStatus.status === 200) {
+                const response = await changeName({ name });
+                setMessage(`Name updated successfully to ${response.data.name}`);
+            }
+        } catch (error) {
+            setMessage('Error changing name: ' + error.response?.data?.message || error.message);
+        }
+    };
+
+    const handleChangePassword = async () => {
+        if (newPassword !== confirmPassword) {
+            setMessage('New password and confirm password do not match.');
+            return;
+        }
+
+        try {
+            const response = await changePassword({currentPassword, newPassword});
+            setMessage('Password updated successfully.');
+        } catch (error) {
+            setMessage('Error changing password: ' + error.response?.data?.message || error.message);
+        }
+    };
+
     return (
-        <div className="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
-            {/* Profile Image */}
-            <div className="flex items-center justify-center mb-6">
-                <img
-                    className="w-24 h-24 rounded-full border-2 border-blue-600"
-                    src="profile-placeholder.png"
-                    alt="User Profile"
+        <div style={{ padding: '20px', maxWidth: '500px', margin: 'auto', fontFamily: 'Arial, sans-serif' }}>
+            <h2>User Account Management</h2>
+            
+            <div style={{ marginBottom: '20px' }}>
+                <h3>Change Name</h3>
+                <input
+                    type="text"
+                    placeholder="Enter new name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
                 />
+                <button
+                    onClick={handleNameChange}
+                    style={{ padding: '10px 20px', backgroundColor: '#007BFF', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                >
+                    Change Name
+                </button>
             </div>
 
-            {/* User Information Form */}
-            <form className="space-y-6">
-                {/* First Name and Last Name */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                            First Name
-                        </label>
-                        <input
-                            type="text"
-                            id="firstName"
-                            className="py-3 px-4 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500"
-                            placeholder="John"
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                            Last Name
-                        </label>
-                        <input
-                            type="text"
-                            id="lastName"
-                            className="py-3 px-4 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500"
-                            placeholder="Doe"
-                        />
-                    </div>
-                </div>
+            <div>
+                <h3>Change Password</h3>
+                <input
+                    type="password"
+                    placeholder="Current password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
+                />
+                <input
+                    type="password"
+                    placeholder="New password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
+                />
+                <input
+                    type="password"
+                    placeholder="Confirm new password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
+                />
+                <button
+                    onClick={handleChangePassword}
+                    style={{ padding: '10px 20px', backgroundColor: '#28A745', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                >
+                    Change Password
+                </button>
+            </div>
 
-                {/* Company */}
-                <div>
-                    <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
-                        Company
-                    </label>
-                    <input
-                        type="text"
-                        id="company"
-                        className="py-3 px-4 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Your Company"
-                    />
-                </div>
-
-                {/* Designation */}
-                <div>
-                    <label htmlFor="designation" className="block text-sm font-medium text-gray-700 mb-2">
-                        Designation
-                    </label>
-                    <input
-                        type="text"
-                        id="designation"
-                        className="py-3 px-4 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Your Designation"
-                    />
-                </div>
-
-                {/* Email */}
-                <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                        Email
-                    </label>
-                    <input
-                        type="email"
-                        id="email"
-                        className="py-3 px-4 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="example@example.com"
-                    />
-                </div>
-
-                {/* Phone Number */}
-                <div>
-                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                        Phone Number
-                    </label>
-                    <input
-                        type="tel"
-                        id="phoneNumber"
-                        className="py-3 px-4 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="+1 234 567 890"
-                    />
-                </div>
-
-                {/* Address */}
-                <div>
-                    <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                        Address
-                    </label>
-                    <textarea
-                        id="address"
-                        className="py-3 px-4 block w-full border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Your Address"
-                        rows="4"
-                    ></textarea>
-                </div>
-
-                {/* Buttons */}
-                <div className="flex justify-between items-center mt-6 space-x-4">
-                    <button
-                        type="button"
-                        className="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
-                    >
-                        Delete Account
-                    </button>
-                    <div className="flex space-x-4">
-                        <button
-                            type="button"
-                            className="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-blue-100 text-blue-800 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:bg-blue-200 disabled:opacity-50 disabled:pointer-events-none"
-                        >
-                            Forgot Password
-                        </button>
-                        <button
-                            type="submit"
-                            className="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                        >
-                            Save
-                        </button>
-                    </div>
-                </div>
-            </form>
+            {message && <div style={{ marginTop: '20px', color: 'red' }}>{message}</div>}
         </div>
     );
 };

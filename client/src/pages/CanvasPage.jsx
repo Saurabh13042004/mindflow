@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { toPng } from "html-to-image";
-
+import { useParams } from "react-router-dom";
 import ReactFlow, {
   addEdge,
   useNodesState,
@@ -13,6 +13,11 @@ import "reactflow/dist/style.css";
 import { PlusCircle } from "lucide-react";
 import { Handle } from "reactflow";
 import Toolbar from "../components/Toolbar";
+import { getFlowchartById,
+  createFlowchart,
+  updateFlowChartbyId
+} from "../api/flowcharts"; 
+import SaveModal from "../components/SaveModal";
 
 const initialNodes = [
   {
@@ -50,9 +55,9 @@ function CustomNode({ id, data }) {
 
   return (
     <div
-      className="relative px-6 py-3 shadow-lg rounded-lg bg-white/95 border-2 border-blue-200 
-  hover:border-blue-400 transition-all duration-200 backdrop-blur-sm"
-      style={{ width: "280px", minHeight: "60px" }}
+      className="relative px-6 py-3 shadow-lg rounded-lg bg-white/95 border-2 border-black 
+  hover:border-black transition-all duration-200 backdrop-blur-sm"
+      style={{ width: "150px", minHeight: "40px" }}
       onClick={handleClick}
     >
       <div className="flex items-center">
@@ -63,7 +68,7 @@ function CustomNode({ id, data }) {
               value={label}
               onChange={handleInputChange}
               onBlur={handleInputBlur}
-              className="w-full px-3 py-2 bg-white/50 border-2 border-blue-200 rounded-md 
+              className="w-full px-3 py-2 bg-white/50 border-1 border-black rounded-md 
   focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent
   transition-all duration-200"
               autoFocus
@@ -149,12 +154,18 @@ const nodeTypes = {
 };
 
 export default function CanvasPage() {
+  const { id } = useParams();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [title, setTitle] = useState('New FlowChart');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewer, setIsViewer] = useState(true);
 
   const onConnect = useCallback(
     (params) => {
-      console.log("Connecting:", params);
+      if(isViewer) return;
       setEdges((eds) => addEdge({ ...params }, eds));
     },
     [setEdges]
@@ -162,6 +173,7 @@ export default function CanvasPage() {
 
   const addChildNode = useCallback(
     (parentId) => {
+      if(isViewer) return;
       const parentNode = nodes.find((node) => node.id === parentId);
       if (!parentNode) return;
 
@@ -261,6 +273,7 @@ export default function CanvasPage() {
 
   // Function to delete any node / edge which is selected
   const onDelete = useCallback(() => {
+    if (isViewer) return;
     const selectedNodes = nodes.filter((node) => node.selected);
     const selectedEdges = edges.filter((edge) => edge.selected);
 
@@ -275,6 +288,7 @@ export default function CanvasPage() {
 
   // Function to add new node on clicking the add node button
   const onAddNode = useCallback(() => {
+    if(isViewer) return;
     const newNodeId = (nodes.length + 1).toString();
     const newNode = {
       id: newNodeId,
@@ -287,12 +301,30 @@ export default function CanvasPage() {
 
   // Function to save the current graph to local storage
   const onSave = useCallback(() => {
-    localStorage.setItem("nodes", JSON.stringify(nodes));
-    localStorage.setItem("edges", JSON.stringify(edges));
-  }, [nodes, edges]);
+    if(isViewer) return;
+    setIsModalOpen(true);
+  })
+
+  const onSaveInternal = useCallback(
+    async (newTitle, nodes, edges) => {
+    try {
+      if (id==='new') {
+        await createFlowchart({title: newTitle, nodes, edges});
+        alert("Flowchart created successfully!");
+      } else {
+        await updateFlowChartbyId(id, { title: newTitle, nodes, edges });
+        alert("Flowchart updated successfully!");
+      }
+    } catch (error) {
+        console.error("Error saving flowchart:", error);
+        alert("Failed to save the flowchart.");
+    }
+
+  }, [id]);
 
   const onLabelChange = useCallback(
     (nodeId, newLabel) => {
+      if(isViewer) return;
       setNodes((nds) =>
         nds.map((node) =>
           node.id === nodeId
@@ -303,6 +335,35 @@ export default function CanvasPage() {
     },
     [setNodes]
   );
+
+  useEffect(() => {
+    const fetchFlowchart = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        if(id==="new") {
+          setTitle('New Flowchart')
+          setIsViewer(false)
+        } else {
+
+          const res  = await getFlowchartById(id)
+          const {nodes: fetchedNodes, edges: fetchedEdges, title: flowChartTitle} = res?.flowchart
+          setNodes(fetchedNodes);
+          setEdges(fetchedEdges);
+          setTitle(flowChartTitle);
+          setIsViewer(res?.role==='viewer')
+        }
+      } catch (err) {
+        setError("Failed to load flowchart.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFlowchart();
+  }, [id, setNodes, setEdges]);
+
 
   return (
     <div
@@ -332,6 +393,14 @@ export default function CanvasPage() {
         <Background className="opacity-10" color="#93c5fd" gap={20} size={1} />
         <Controls className="bg-white/90 shadow-lg rounded-lg border border-blue-100" />{" "}
       </ReactFlow>
+      <SaveModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={title}
+        nodes={nodes}
+        edges={edges}
+        onSave={onSaveInternal}
+      />
     </div>
   );
 }
