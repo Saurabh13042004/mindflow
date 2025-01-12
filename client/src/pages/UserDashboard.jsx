@@ -20,6 +20,7 @@ import {
 import Cookies from 'js-cookie';
 import { Link, useNavigate } from "react-router-dom";
 import { deleteFlowChart, getAllFlowcharts } from '../api/flowcharts';
+import { shareAccessAssociation } from '../api/associations';
 
 function UserDashboard() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -54,14 +55,21 @@ function UserDashboard() {
   };
 
   const handleAccessClick = (file) => {
+    console.log(file);
     setSelectedFile(file);
     setShowAccessModal(true);
     setShowSettingsDropdown(null);
   };
 
-  const handleShareAccess = (e) => {
+  const handleShareAccess = async (e) => {
     e.preventDefault();
-    console.log('Sharing access with:', { email, role, fileId: selectedFile?.id });
+    const resp = await shareAccessAssociation({ email, role, fileId: selectedFile?.flowchart?._id });
+    console.log(resp.data);
+    if (resp.status === 200) {
+      window.alert('Access shared successfully');
+    }else {
+      window.alert(`Failed to share access: ${resp.data.message}`);
+    }
     setShowAccessModal(false);
     setEmail('');
     setRole('viewer');
@@ -315,7 +323,7 @@ function UserDashboard() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Share "{selectedFile?.name}"</h3>
+              <h3 className="text-lg font-semibold">Share "{selectedFile?.flowchart?.title}"</h3>
               <button
                 onClick={() => setShowAccessModal(false)}
                 className="text-gray-500 hover:text-gray-700"
@@ -350,7 +358,6 @@ function UserDashboard() {
                 >
                   <option value="viewer">Viewer</option>
                   <option value="editor">Editor</option>
-                  <option value="admin">Admin</option>
                 </select>
               </div>
 
