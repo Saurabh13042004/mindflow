@@ -398,17 +398,41 @@ export default function CanvasPage() {
   // Function to delete any node / edge which is selected
   const onDelete = useCallback(() => {
     if (isViewer) return;
+  
     const selectedNodes = nodes.filter((node) => node.selected);
     const selectedEdges = edges.filter((edge) => edge.selected);
-
+  
     if (selectedNodes.length > 0) {
+      const connectedEdges = selectedNodes.flatMap((node) =>
+        edges.filter((edge) => edge.source === node.id || edge.target === node.id)
+      );
+  
+      if (connectedEdges.length > 0) {
+        toast.error("Please delete the connections before deleting the node.");
+        return;
+      }
+  
       setNodes((nds) => nds.filter((node) => !node.selected));
     }
-
+  
     if (selectedEdges.length > 0) {
       setEdges((eds) => eds.filter((edge) => !edge.selected));
     }
-  }, [nodes, edges, setNodes, setEdges]);
+  }, [nodes, edges, setNodes, setEdges, isViewer]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Delete') {
+        onDelete();
+      }
+    };
+  
+    window.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onDelete]);
 
   // Function to add new node on clicking the add node button
   const onAddNode = useCallback(() => {
