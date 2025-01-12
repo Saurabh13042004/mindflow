@@ -237,7 +237,7 @@ export default function CanvasPage() {
 
   const onConnect = useCallback(
     (params) => {
-      if(isViewer) return;
+      // if(isViewer) return;
       console.log("Connecting:", params);
       setEdges((eds) => addEdge({ ...params }, eds));
     },
@@ -246,7 +246,7 @@ export default function CanvasPage() {
 
   const addChildNode = useCallback(
     (parentId) => {
-      if(isViewer) return;
+      // if(isViewer) return;
       const parentNode = nodes.find((node) => node.id === parentId);
       if (!parentNode) return;
 
@@ -374,26 +374,30 @@ export default function CanvasPage() {
 
   // Function to save the current graph to local storage
   const onSave = useCallback(() => {
-    if(isViewer) return;
     setIsModalOpen(true);
   })
 
   const onSaveInternal = useCallback(
     async (newTitle, nodes, edges) => {
-    try {
-      if (id==='new') {
-        await createFlowchart({title: newTitle, nodes, edges});
-        alert("Flowchart created successfully!");
-      } else {
-        await updateFlowChartbyId(id, { title: newTitle, nodes, edges });
-        alert("Flowchart updated successfully!");
-      }
-    } catch (error) {
+      try {
+        console.log("Saving flowchart with title:", newTitle);
+        console.log("Nodes:", nodes);
+        console.log("Edges:", edges);
+        
+        if (id === 'new') {
+          await createFlowchart({ title: newTitle, nodes, edges });
+          alert("Flowchart created successfully!");
+        } else {
+          await updateFlowChartbyId(id, { title: newTitle, nodes, edges });
+          alert("Flowchart updated successfully!");
+        }
+      } catch (error) {
         console.error("Error saving flowchart:", error);
         alert("Failed to save the flowchart.");
-    }
-  }, [id]);
-
+      }
+    },
+    [id]
+  );
 
   useEffect(() => {
     const fetchFlowchart = async () => {
@@ -421,7 +425,7 @@ export default function CanvasPage() {
 
   const onStyleChange = useCallback(
     (nodeId, newStyle) => {
-      if(isViewer) return;
+      // if(isViewer) return;
       setNodes((nds) =>
         nds.map((node) =>
           node.id === nodeId
@@ -435,7 +439,7 @@ export default function CanvasPage() {
 
   const onLabelChange = useCallback(
     (nodeId, newLabel) => {
-      if(isViewer) return;
+      // if(isViewer) return;
       setNodes((nds) =>
         nds.map((node) =>
           node.id === nodeId
