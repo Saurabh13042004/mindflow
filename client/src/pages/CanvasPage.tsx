@@ -255,8 +255,8 @@ export default function CanvasPage() {
 
   const handleCanvasClick = (event) => {
     const reactFlowBounds = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - reactFlowBounds.left; // X position relative to the canvas
-    const y = event.clientY - reactFlowBounds.top;  // Y position relative to the canvas
+    const x = event.clientX - reactFlowBounds.left-400; // X position relative to the canvas
+    const y = event.clientY - reactFlowBounds.top-400;  // Y position relative to the canvas
     setMousePosition({ x, y });
 
     // Create a new node if a node type is selected
