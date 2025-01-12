@@ -1,4 +1,4 @@
-const Comment = require("../models/Comment");
+const Comment = require("../models/comment.js");
 const Flowchart = require("../models/flowchart");
 
 // Create a new comment
