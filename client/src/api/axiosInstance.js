@@ -3,7 +3,7 @@ import Cookies from 'js-cookie'
 
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000/api/',
+  baseURL: 'https://mindflow-cnz0.onrender.com/api/',
 });
 
 // Attach token to requests
