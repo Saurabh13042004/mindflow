@@ -1,4 +1,7 @@
 /** @type {import('tailwindcss').Config} */
+import prelinePlugin from 'preline/plugin';
+import tailgridsPlugin from 'tailgrids/plugin';
+
 export default {
   content: [
     "./index.html",
@@ -9,8 +12,8 @@ export default {
     extend: {},
   },
   darkMode: 'class', // Use class-based dark mode instead of system preference
-  plugins: [ 
-    require('preline/plugin'), 
-    require("tailgrids/plugin")
+  plugins: [
+    prelinePlugin,
+    tailgridsPlugin,
   ],
-}
+};
