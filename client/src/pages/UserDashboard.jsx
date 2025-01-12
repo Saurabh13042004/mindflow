@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   Brain,
   Plus,
@@ -21,6 +21,7 @@ import Cookies from 'js-cookie';
 import { Link, useNavigate } from "react-router-dom";
 import { deleteFlowChart, getAllFlowcharts } from '../api/flowcharts';
 import { shareAccessAssociation } from '../api/associations';
+import { AuthContext } from '../context/authContext';
 
 function UserDashboard() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -29,6 +30,7 @@ function UserDashboard() {
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(null);
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('viewer');
+  const {user, logout} = useContext(AuthContext);
 
   const [recentFiles, setRecentFiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -157,8 +159,8 @@ function UserDashboard() {
             {isProfileOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-200">
                 <div className="px-4 py-2 border-b">
-                  <p className="text-sm font-medium text-gray-900">John Doe</p>
-                  <p className="text-xs text-gray-500">john@example.com</p>
+                  <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                  <p className="text-xs text-gray-500">{user.email}</p>
                 </div>
 
                 <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">

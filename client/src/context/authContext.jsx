@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import Cookies from "js-cookie";
+import {jwtDecode} from "jwt-decode";
 
 export const AuthContext = createContext();
 
@@ -9,13 +10,22 @@ const AuthProvider = ({ children, navigate }) => {
   useEffect(() => {
     const token = Cookies.get("token");
     if (token) {
-      setUser({ name: "John Doe", email: "john@example.com" });
+      try {
+        const decoded = jwtDecode(token);
+        setUser({
+          name: decoded.name,
+          email: decoded.email,
+        });
+      } catch (err) {
+        console.error("Invalid token", err);
+        Cookies.remove("token");
+      }
     }
   }, []);
 
-  const login = (newToken) => {
-    Cookies.set("token", newToken, { expires: 1 });
-    setUser({ name: "John Doe", email: "john@example.com" });
+  const login = (respData) => {
+    Cookies.set("token", respData.token, { expires: 1 });
+    setUser({ name: respData.name, email: respData.email });
   };
 
   const logout = () => {
