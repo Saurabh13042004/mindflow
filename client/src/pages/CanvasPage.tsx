@@ -620,7 +620,8 @@ export default function CanvasPage() {
         fitView
         className="bg-gray-50"
       >
-        <Background className="opacity-10" color="#93c5fd" gap={20} size={1} />
+        <Background variant="dots" className="" color="#93c5fd" gap={20} size={1} />
+        {/* <Background className="opacity-10" color="#93c5fd" gap={20} size={1} /> */}
         <Controls className="bg-white/90 shadow-lg rounded-lg border border-blue-100" />{" "}
       </ReactFlow>
 

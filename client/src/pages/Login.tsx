@@ -19,9 +19,11 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    toast.loading('Logging in...');
     try {
       const response = await loginUser ({ email, password });
       login(response.data);
+      toast.dismiss();
       toast.success('Login successful!');
 
       // Show success message for 1 second
