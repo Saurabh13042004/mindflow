@@ -20,6 +20,9 @@ import { getFlowchartById,
   updateFlowChartbyId
 } from "../api/flowcharts"; 
 import SaveModal from "../components/SaveModal";
+import AIGenerateModal from "../components/AIGenerateModal";
+import  StickyNote  from '../components/StickyNote';
+import  TextNode  from '../components/TextNode';
 
 
 const defaultNodeStyle = {
@@ -223,6 +226,8 @@ function CustomNode({ id, data }: CustomNodeProps) {
 
 const nodeTypes = {
   custom: CustomNode,
+  stickyNote: StickyNote,
+  textNode: TextNode,
 };
 
 export default function CanvasPage() {
@@ -234,6 +239,10 @@ export default function CanvasPage() {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewer, setIsViewer] = useState(true);
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [selectedNodeType, setSelectedNodeType] = useState(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 }); // State to store mouse position
+
 
   const onConnect = useCallback(
     (params) => {
@@ -243,6 +252,26 @@ export default function CanvasPage() {
     },
     [setEdges]
   );
+
+  const handleCanvasClick = (event) => {
+    const reactFlowBounds = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - reactFlowBounds.left; // X position relative to the canvas
+    const y = event.clientY - reactFlowBounds.top;  // Y position relative to the canvas
+    setMousePosition({ x, y });
+
+    // Create a new node if a node type is selected
+    if (selectedNodeType) {
+      const newNodeId = (nodes.length + 1).toString();
+      const newNode = {
+        id: newNodeId,
+        type: selectedNodeType,
+        data: { label: selectedNodeType === 'stickyNote' ? 'New note...' : 'Text...' },
+        position: { x, y },
+      };
+      setNodes((nds) => nds.concat(newNode));
+      setSelectedNodeType(null); // Reset selected node type after creating the node
+    }
+  };
 
   const addChildNode = useCallback(
     (parentId) => {
@@ -450,18 +479,63 @@ export default function CanvasPage() {
     },
     [setNodes]
   );
+  
+  const onAddStickyNote = () => {
+    setSelectedNodeType('stickyNote'); // Set selected node type to Sticky Note
+  };
+
+  const onAddTextNode = () => {
+    setSelectedNodeType('textNode'); // Set selected node type to Text Node
+  };
+
+  
+  const handleAIGenerate = useCallback((prompt: string) => {
+    // Demo implementation - creates a simple mindmap structure
+    const demoNodes = [
+      {
+        id: 'ai-1',
+        type: 'custom',
+        data: { label: prompt, style: defaultNodeStyle },
+        position: { x: 250, y: 250 },
+      },
+      {
+        id: 'ai-2',
+        type: 'custom',
+        data: { label: 'Demo Subtopic 1', style: defaultNodeStyle },
+        position: { x: 500, y: 150 },
+      },
+      {
+        id: 'ai-3',
+        type: 'custom',
+        data: { label: 'Demo Subtopic 2', style: defaultNodeStyle },
+        position: { x: 500, y: 350 },
+      },
+    ];
+  
+    const demoEdges = [
+      { id: 'e-ai-1-2', source: 'ai-1', target: 'ai-2' },
+      { id: 'e-ai-1-3', source: 'ai-1', target: 'ai-3' },
+    ];
+  
+    setNodes((nds) => [...nds, ...demoNodes]);
+    setEdges((eds) => [...eds, ...demoEdges]);
+  }, [setNodes, setEdges]);
 
 
   return (
     <div
       id="reactflow-wrapper"
       className="w-full h-screen bg-gradient-to-br from-blue-50/50 to-purple-50/50"
+      onClick={handleCanvasClick} 
     >
       <Toolbar
         onDelete={onDelete}
         onAddNode={onAddNode}
         onSave={onSave}
         onExport={onExport}
+        onGenerateAI={() => setShowAIModal(true)}
+        onAddStickyNote={onAddStickyNote}
+        onAddTextNode={onAddTextNode}
       />
 
       <ReactFlow
@@ -474,6 +548,7 @@ export default function CanvasPage() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
+
         fitView
         className="bg-gray-50"
       >
@@ -487,6 +562,11 @@ export default function CanvasPage() {
         nodes={nodes}
         edges={edges}
         onSave={onSaveInternal}
+      />
+      <AIGenerateModal
+        isOpen={showAIModal}
+        onClose={() => setShowAIModal(false)}
+        onGenerate={handleAIGenerate}
       />
     </div>
   );
