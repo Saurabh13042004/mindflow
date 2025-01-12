@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-route
 import { ReactFlowProvider  } from '@xyflow/react';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
-import Register from './pages/Register';
+import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword';
 import CanvasPage from './pages/CanvasPage';
 import UserDashboard from './pages/UserDashboard';

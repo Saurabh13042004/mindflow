@@ -197,11 +197,14 @@ function UserDashboard() {
       <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+
           <button className="flex flex-col items-center p-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all">
+
+
             <div className="h-12 w-12 bg-blue-50 rounded-full flex items-center justify-center mb-3">
-              <Plus className="h-6 w-6 text-blue-600" />
+            <Link to='/canvas/new'> <Plus className="h-6 w-6 text-blue-600" /></Link>
             </div>
-            <Link to='/canvas/new' className="text-lg font-medium text-gray-800 dark:text-white">New Mindmap</Link>
+            <span className="text-lg font-medium text-gray-800 dark:text-white">New Mindmap</span>
             {/* <span className="font-medium">New Mindmap</span> */}
           </button>
 
