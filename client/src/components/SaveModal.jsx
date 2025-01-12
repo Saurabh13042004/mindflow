@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 export default function SaveModal({ isOpen, onClose, title, nodes, edges, onSave }) {
-  const [inputTitle, setInputTitle] = useState(title || "");
+  const [inputTitle, setInputTitle] = useState(title || "New Flowchart");
 
   const handleSave = () => {
     if (!inputTitle.trim()) {

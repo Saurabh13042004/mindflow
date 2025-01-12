@@ -234,7 +234,7 @@ export default function CanvasPage() {
   const { id } = useParams();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [title, setTitle] = useState('New FlowChart');
+  const [title, setTitle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -404,8 +404,8 @@ export default function CanvasPage() {
   // Function to save the current graph to local storage
   const onSave = useCallback(() => {
     setIsModalOpen(true);
-  })
-
+  },[])
+;
   const onSaveInternal = useCallback(
     async (newTitle, nodes, edges) => {
       try {
@@ -437,7 +437,7 @@ export default function CanvasPage() {
           setTitle('New Flowchart')
         } else {
           const res  = await getFlowchartById(id)
-          const {nodes: fetchedNodes, edges: fetchedEdges, title: flowChartTitle} = res?.flowchart          
+          const {nodes: fetchedNodes, edges: fetchedEdges, title: flowChartTitle} = res?.flowchart;        
           setNodes(fetchedNodes);
           setEdges(fetchedEdges);
           setTitle(flowChartTitle);
@@ -555,14 +555,16 @@ export default function CanvasPage() {
         <Background className="opacity-10" color="#93c5fd" gap={20} size={1} />
         <Controls className="bg-white/90 shadow-lg rounded-lg border border-blue-100" />{" "}
       </ReactFlow>
-      <SaveModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={title}
-        nodes={nodes}
-        edges={edges}
-        onSave={onSaveInternal}
-      />
+      {title && (
+        <SaveModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title={title}
+          nodes={nodes}
+          edges={edges}
+          onSave={onSaveInternal}
+        />
+      )}
       <AIGenerateModal
         isOpen={showAIModal}
         onClose={() => setShowAIModal(false)}
