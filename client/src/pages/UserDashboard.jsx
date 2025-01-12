@@ -17,6 +17,7 @@ import {
   Trash2,
   X
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import Cookies from 'js-cookie';
 import { Link, useNavigate } from "react-router-dom";
 import { deleteFlowChart, getAllFlowcharts } from '../api/flowcharts';
@@ -30,7 +31,14 @@ function UserDashboard() {
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(null);
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('viewer');
-  const {user, logout} = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
 
   const [recentFiles, setRecentFiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,8 +54,42 @@ function UserDashboard() {
   //   { id: 3, name: 'Product Roadmap', lastModified: '2024-03-08', shared: 2 }
   // ];
 
+
+  const handleEditProfile = async (e) => {
+    e.preventDefault();
+    try {
+      await changeName({ name: newName });
+      toast.success('Name updated successfully!');
+      setShowEditProfileModal(false);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update name');
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match!');
+      return;
+    }
+    try {
+      await changePassword({
+        currentPassword,
+        newPassword
+      });
+      toast.success('Password changed successfully!');
+      setShowChangePasswordModal(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to change password');
+    }
+  };
+
   const handleLogout = () => {
     Cookies.remove('token');
+    toast.success('Logged out successfully!');
     navigate('/');
   };
 
@@ -69,7 +111,7 @@ function UserDashboard() {
     console.log(resp.data);
     if (resp.status === 200) {
       window.alert('Access shared successfully');
-    }else {
+    } else {
       window.alert(`Failed to share access: ${resp.data.message}`);
     }
     setShowAccessModal(false);
@@ -94,9 +136,18 @@ function UserDashboard() {
     setShowSettingsDropdown(null);
   };
 
-  const handleEdit =  (flowchartId) => {
+  const handleEdit = (flowchartId) => {
     window.location.href = `canvas/${flowchartId}`;
     setShowSettingsDropdown(null);
+  };
+
+  const handleNewMap = () => {
+    const loadingToastId = toast.loading('Creating new mindmap...');
+    setTimeout(() => {
+      toast.dismiss(loadingToastId);
+      navigate('/canvas/new');
+      toast.success('Mindmap created successfully!');
+    }, 2000);
   };
 
 
@@ -163,12 +214,12 @@ function UserDashboard() {
                   <p className="text-xs text-gray-500">{user.email}</p>
                 </div>
 
-                <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <a onClick={() => setShowEditProfileModal(true)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   <User className="h-4 w-4 mr-3 text-gray-500" />
                   Edit Profile
                 </a>
 
-                <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <a onClick={() => setShowChangePasswordModal(true)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   <Key className="h-4 w-4 mr-3 text-gray-500" />
                   Change Password
                 </a>
@@ -198,11 +249,12 @@ function UserDashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
 
-          <button className="flex flex-col items-center p-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all">
+          <button onClick={handleNewMap} className="flex flex-col items-center p-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all">
 
 
             <div className="h-12 w-12 bg-blue-50 rounded-full flex items-center justify-center mb-3">
-            <Link to='/canvas/new'> <Plus className="h-6 w-6 text-blue-600" /></Link>
+              {/* <Link to='/canvas/new'>  */}
+              <Plus className="h-6 w-6 text-blue-600" />
             </div>
             <span className="text-lg font-medium text-gray-800 dark:text-white">New Mindmap</span>
             {/* <span className="font-medium">New Mindmap</span> */}
@@ -248,7 +300,7 @@ function UserDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {recentFiles.map((file,index) => (
+                {recentFiles.map((file, index) => (
                   <tr key={index} className="border-b last:border-b-0">
                     <td className="py-4">
                       <div className="flex items-center">
@@ -258,11 +310,11 @@ function UserDashboard() {
                       </div>
                     </td>
                     <td className="py-4 text-sm text-gray-500">
-                    {new Date(file.flowchart.createdAt).toLocaleDateString()}
-                      
+                      {new Date(file.flowchart.createdAt).toLocaleDateString()}
+
                       {/* {file.flowchart.createdAt} */}
-                      
-                      </td>
+
+                    </td>
                     <td className="py-4">
                       <div className="flex -space-x-2">
                         {[...Array(file.shared)].map((_, i) => (
@@ -379,6 +431,124 @@ function UserDashboard() {
                   className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700"
                 >
                   Share Access
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Edit Profile Modal */}
+      {showEditProfileModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Edit Profile</h3>
+              <button onClick={() => setShowEditProfileModal(false)} className="text-gray-500 hover:text-gray-700">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditProfile}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Enter new name"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture</label>
+                <input
+                  type="file"
+                  disabled
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="text-xs text-gray-500">Feature under development</span>
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowEditProfileModal(false)}
+                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Change Password Modal */}
+      {showChangePasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Change Password</h3>
+              <button onClick={() => setShowChangePasswordModal(false)} className="text-gray-500 hover:text-gray-700">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleChangePassword}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowChangePasswordModal(false)}
+                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                >
+                  Change Password
                 </button>
               </div>
             </form>

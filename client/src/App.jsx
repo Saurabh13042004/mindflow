@@ -10,6 +10,7 @@ import UserDashboard from './pages/UserDashboard';
 import PrivateRoute from './components/PrivateRoute';
 import AuthProvider from './context/authContext';
 import RedirectIfLoggedIn from './components/RedirectIfLoggedIn';
+import toast, { Toaster } from 'react-hot-toast';
 
 const AuthProviderWrapper = ({ children }) => {
   const navigate = useNavigate();
@@ -68,6 +69,7 @@ function App() {
           </div>
           </AuthProviderWrapper>
         </Router>
+        <Toaster />
       </ReactFlowProvider >
   )
 }

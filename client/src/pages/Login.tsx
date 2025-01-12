@@ -1,31 +1,42 @@
 import React, { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Brain } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { loginUser } from '../api/users';
+import { loginUser  } from '../api/users';
 import { AuthContext } from '../context/authContext';
-import { useNavigate } from 'react-router-dom';
-
+import { toast } from 'react-hot-toast';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
+    setLoading(true);
     try {
-      const response = await loginUser({email, password});
+      const response = await loginUser ({ email, password });
       login(response.data);
-      navigate('/dashboard');
+      toast.success('Login successful!');
+
+      // Show success message for 1 second
+      setTimeout(() => {
+        navigate('/dashboard');
+        
+        // Redirecting to dashboard for 1 second before final redirect
+        setTimeout(() => {
+          // Final redirect logic can be added here if needed
+        }, 1000);
+      }, 1000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      toast.error(err.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,12 +76,18 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-              <Button type="submit" className="w-full text-white">Sign In</Button>
+              <Button type="submit" className="w-full text-white" disabled={loading}>
+                {loading ? (
+                  <span className="loader"></span> // Replace with your loader component
+                ) : (
+                  'Sign In'
+                )}
+              </Button>
             </form>
             
             <div className="mt-4 text-center text-sm">
               <span className="text-muted-foreground">Don't have an account? </span>
-              <Link to="/signup" className="text-blue-600  hover:underline">
+              <Link to="/signup" className="text-blue-600 hover:underline">
                 Sign up
               </Link>
             </div>

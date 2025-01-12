@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { toPng } from "html-to-image";
-
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import ReactFlow, {
   addEdge,
   useNodesState,
@@ -15,14 +16,16 @@ import { Handle } from "reactflow";
 import Toolbar from "../components/Toolbar";
 import NodeCustomizer from "../components/NodeCustomizer"
 import { useParams } from "react-router-dom";
-import { getFlowchartById,
+import {
+  getFlowchartById,
   createFlowchart,
   updateFlowChartbyId
-} from "../api/flowcharts"; 
+} from "../api/flowcharts";
 import SaveModal from "../components/SaveModal";
 import AIGenerateModal from "../components/AIGenerateModal";
-import  StickyNote  from '../components/StickyNote';
-import  TextNode  from '../components/TextNode';
+import StickyNote from '../components/StickyNote';
+import TextNode from '../components/TextNode';
+import TemplateSelector from '../components/TemplateSelector';
 
 
 const defaultNodeStyle = {
@@ -38,7 +41,7 @@ const initialNodes = [
   {
     id: '1',
     type: 'custom',
-    data: { 
+    data: {
       label: 'Main Idea',
       style: defaultNodeStyle,
     },
@@ -158,7 +161,7 @@ function CustomNode({ id, data }: CustomNodeProps) {
               <Settings className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
             </button>
             <button
-              className="absolute -top-8 left-1/2 transform -translate-x-1/2 p-2 
+              className="absolute -top-12 left-1/2 transform -translate-x-1/2 p-2 
   rounded-full bg-white/90 hover:bg-blue-50 shadow-md transition-all 
   duration-200 hover:scale-110 focus:outline-none group"
               onClick={() => {
@@ -170,7 +173,7 @@ function CustomNode({ id, data }: CustomNodeProps) {
               <PlusCircle className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
             </button>
             <button
-              className="absolute -bottom-7 left-1/2 transform -translate-x-1/2 p-2 rounded-full bg-white/90 hover:bg-blue-50 shadow-md transition-all 
+              className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 p-2 rounded-full bg-white/90 hover:bg-blue-50 shadow-md transition-all 
   duration-200 hover:scale-110 focus:outline-none group"
               onClick={() => {
                 buttonPressed.push("bottom");
@@ -181,7 +184,7 @@ function CustomNode({ id, data }: CustomNodeProps) {
               <PlusCircle className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
             </button>
             <button
-              className="absolute right-0 top-1/2 transform -translate-y-1/2  p-2 rounded-full bg-white/90 hover:bg-blue-50 shadow-md transition-all "
+              className="absolute -right-12 top-1/2 transform -translate-y-1/2  p-2 rounded-full bg-white/90 hover:bg-blue-50 shadow-md transition-all "
               onClick={() => {
                 buttonPressed.push("right");
                 data.onAddChild(id);
@@ -191,7 +194,7 @@ function CustomNode({ id, data }: CustomNodeProps) {
               <PlusCircle className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
             </button>
             <button
-              className="absolute -left-7 top-1/2 transform -translate-y-1/2   duration-200 hover:scale-110 focus:outline-none group"
+              className="absolute -left-10 top-1/2 transform -translate-y-1/2  p-2 rounded-full bg-white/90 hover:bg-blue-50 shadow-md transition-all "
               onClick={() => {
                 buttonPressed.push("left");
                 data.onAddChild(id);
@@ -232,6 +235,7 @@ const nodeTypes = {
 
 export default function CanvasPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [title, setTitle] = useState(null);
@@ -241,6 +245,8 @@ export default function CanvasPage() {
   const [isViewer, setIsViewer] = useState(true);
   const [showAIModal, setShowAIModal] = useState(false);
   const [selectedNodeType, setSelectedNodeType] = useState(null);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [toastShown, setToastShown] = useState(false); // Add this state
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 }); // State to store mouse position
 
 
@@ -253,10 +259,26 @@ export default function CanvasPage() {
     [setEdges]
   );
 
+  const handleTemplateSelect = (templateNodes, templateEdges) => {
+    // Map the nodes to include the required callbacks
+    const nodesWithCallbacks = templateNodes.map(node => ({
+      ...node,
+      data: {
+        ...node.data,
+        onAddChild: addChildNode,
+        onLabelChange: onLabelChange,
+        onStyleChange: onStyleChange
+      }
+    }));
+
+    setNodes(nodesWithCallbacks);
+    setEdges(templateEdges);
+  };
+
   const handleCanvasClick = (event) => {
     const reactFlowBounds = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - reactFlowBounds.left-400; // X position relative to the canvas
-    const y = event.clientY - reactFlowBounds.top-400;  // Y position relative to the canvas
+    const x = event.clientX - reactFlowBounds.left - 400; // X position relative to the canvas
+    const y = event.clientY - reactFlowBounds.top - 400;  // Y position relative to the canvas
     setMousePosition({ x, y });
 
     // Create a new node if a node type is selected
@@ -333,7 +355,7 @@ export default function CanvasPage() {
       const newNode = {
         id: newNodeId,
         type: "custom",
-        data: { label: `Node ${newNodeId}`, style: defaultNodeStyle},
+        data: { label: `Node ${newNodeId}`, style: defaultNodeStyle },
         position: newNodePosition,
         sourcePosition,
         targetPosition,
@@ -375,7 +397,7 @@ export default function CanvasPage() {
 
   // Function to delete any node / edge which is selected
   const onDelete = useCallback(() => {
-    if(isViewer) return;
+    if (isViewer) return;
     const selectedNodes = nodes.filter((node) => node.selected);
     const selectedEdges = edges.filter((edge) => edge.selected);
 
@@ -390,7 +412,7 @@ export default function CanvasPage() {
 
   // Function to add new node on clicking the add node button
   const onAddNode = useCallback(() => {
-    if(isViewer) return;
+    if (isViewer) return;
     const newNodeId = (nodes.length + 1).toString();
     const newNode = {
       id: newNodeId,
@@ -404,51 +426,72 @@ export default function CanvasPage() {
   // Function to save the current graph to local storage
   const onSave = useCallback(() => {
     setIsModalOpen(true);
-  },[])
-;
+  }, [])
+    ;
   const onSaveInternal = useCallback(
     async (newTitle, nodes, edges) => {
+      let loadingToastId = null;
+
       try {
+        loadingToastId = toast.loading('Saving mindmap...');
         console.log("Saving flowchart with title:", newTitle);
         console.log("Nodes:", nodes);
         console.log("Edges:", edges);
-        
+
+        let response;
         if (id === 'new') {
-          await createFlowchart({ title: newTitle, nodes, edges });
-          alert("Flowchart created successfully!");
+          response = await createFlowchart({ title: newTitle, nodes, edges });
+          toast.dismiss(loadingToastId);
+          toast.success("Mindmap created successfully!");
+          navigate(`/canvas/${response._id}`);
         } else {
-          await updateFlowChartbyId(id, { title: newTitle, nodes, edges });
-          alert("Flowchart updated successfully!");
+          response = await updateFlowChartbyId(id, { title: newTitle, nodes, edges });
+          toast.dismiss(loadingToastId);
+          toast.success("Mindmap updated successfully!");
         }
       } catch (error) {
         console.error("Error saving flowchart:", error);
-        alert("Failed to save the flowchart.");
+        if (loadingToastId) toast.dismiss(loadingToastId);
+        toast.error("Failed to save the mindmap");
       }
     },
-    [id]
+    [id, navigate]
   );
 
   useEffect(() => {
     const fetchFlowchart = async () => {
+      let loadingToastId = null;
+
       try {
         setLoading(true);
         setError(null);
-        if(id==="new") {
-          setTitle('New Flowchart')
+        loadingToastId = toast.loading('Loading mindmap...');
+
+        if (id === "new") {
+          setTitle('New Flowchart');
+          toast.dismiss(loadingToastId);
+          toast.success('Created new mindmap');
         } else {
-          const res  = await getFlowchartById(id)
-          const {nodes: fetchedNodes, edges: fetchedEdges, title: flowChartTitle} = res?.flowchart;        
+          const res = await getFlowchartById(id);
+          const { nodes: fetchedNodes, edges: fetchedEdges, title: flowChartTitle } = res?.flowchart;
           setNodes(fetchedNodes);
           setEdges(fetchedEdges);
           setTitle(flowChartTitle);
-          setIsViewer(res?.role==='viewer')
+          setIsViewer(res?.role === 'viewer');
+
+          toast.dismiss(loadingToastId);
+          toast.success('Mindmap loaded successfully');
         }
       } catch (err) {
         setError("Failed to load flowchart.");
+        if (loadingToastId) toast.dismiss(loadingToastId);
+        toast.error("Failed to load mindmap");
       } finally {
         setLoading(false);
+        setToastShown(true); // Mark toast as shown
       }
     };
+
     fetchFlowchart();
   }, [id, setNodes, setEdges]);
 
@@ -479,7 +522,7 @@ export default function CanvasPage() {
     },
     [setNodes]
   );
-  
+
   const onAddStickyNote = () => {
     setSelectedNodeType('stickyNote'); // Set selected node type to Sticky Note
   };
@@ -488,7 +531,7 @@ export default function CanvasPage() {
     setSelectedNodeType('textNode'); // Set selected node type to Text Node
   };
 
-  
+
   const handleAIGenerate = useCallback((prompt: string) => {
     // Demo implementation - creates a simple mindmap structure
     const demoNodes = [
@@ -511,12 +554,12 @@ export default function CanvasPage() {
         position: { x: 500, y: 350 },
       },
     ];
-  
+
     const demoEdges = [
       { id: 'e-ai-1-2', source: 'ai-1', target: 'ai-2' },
       { id: 'e-ai-1-3', source: 'ai-1', target: 'ai-3' },
     ];
-  
+
     setNodes((nds) => [...nds, ...demoNodes]);
     setEdges((eds) => [...eds, ...demoEdges]);
   }, [setNodes, setEdges]);
@@ -526,7 +569,7 @@ export default function CanvasPage() {
     <div
       id="reactflow-wrapper"
       className="w-full h-screen bg-gradient-to-br from-blue-50/50 to-purple-50/50"
-      onClick={handleCanvasClick} 
+      onClick={handleCanvasClick}
     >
       <Toolbar
         onDelete={onDelete}
@@ -536,12 +579,13 @@ export default function CanvasPage() {
         onGenerateAI={() => setShowAIModal(true)}
         onAddStickyNote={onAddStickyNote}
         onAddTextNode={onAddTextNode}
+        onShowTemplates={() => setShowTemplates(true)} 
       />
 
       <ReactFlow
         nodes={nodes.map((node) => ({
           ...node,
-          data: { ...node.data, onAddChild: addChildNode, onLabelChange ,   onStyleChange},
+          data: { ...node.data, onAddChild: addChildNode, onLabelChange, onStyleChange },
         }))}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -555,6 +599,14 @@ export default function CanvasPage() {
         <Background className="opacity-10" color="#93c5fd" gap={20} size={1} />
         <Controls className="bg-white/90 shadow-lg rounded-lg border border-blue-100" />{" "}
       </ReactFlow>
+
+      {showTemplates && (
+      <TemplateSelector
+        onSelect={handleTemplateSelect}
+        onClose={() => setShowTemplates(false)}
+      />
+    )}
+
       {title && (
         <SaveModal
           isOpen={isModalOpen}

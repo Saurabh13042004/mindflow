@@ -9,7 +9,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-
+import { toast } from 'react-hot-toast';
 export default function Register() {
   const [formData, setFormData] = useState({
     name: "",
@@ -32,6 +32,7 @@ export default function Register() {
   };
 
   const handleSubmit = async (e) => {
+
     e.preventDefault();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -45,16 +46,23 @@ export default function Register() {
 
     try {
       setIsLoading(true);
+      toast.loading('Creating account...');
       const response = await registerUser(formData);
+      toast.dismiss();
+      toast.success('Registration successful! You can now log in.');
       setSuccess("Registration successful! You can now log in.");
       if(response.status==201) {
         setTimeout(() => navigate('/login'), 2000);
       }
       setError("");
+
     } catch (err) {
+      toast.dismiss();
+      toast.error(err.response?.data?.message || "An error occurred. Please try again.");
       setError(err.response?.data?.message || "An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
+      toast.dismiss();
     }
   };
 

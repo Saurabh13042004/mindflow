@@ -7,7 +7,8 @@ import {
   Bot, 
   StickyNote, 
   Type,
-  ChevronLeft
+  ChevronLeft,
+  Layout
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -27,7 +28,16 @@ const ToolbarButton = ({ onClick, icon: Icon, label, disabled = false }) => (
   </button>
 );
 
-const Toolbar = ({ onAddNode, onDelete, onSave, onExport, onGenerateAI, onAddStickyNote, onAddTextNode }) => {
+const Toolbar = ({ 
+  onAddNode, 
+  onDelete, 
+  onSave, 
+  onExport, 
+  onGenerateAI, 
+  onAddStickyNote, 
+  onAddTextNode,
+  onShowTemplates 
+}) => {
   return (
     <div className="absolute top-0 left-0 right-0 flex justify-between items-center px-4 py-2 bg-white/95 shadow-sm border-b border-gray-200 backdrop-blur-sm z-10">
       <Link
@@ -40,6 +50,7 @@ const Toolbar = ({ onAddNode, onDelete, onSave, onExport, onGenerateAI, onAddSti
       
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 p-1 bg-gray-50 rounded-md border border-gray-200">
+          <ToolbarButton onClick={onShowTemplates} icon={Layout} label="Templates" />
           <ToolbarButton onClick={onAddNode} icon={PlusCircle} label="Flow Node" />
           <ToolbarButton onClick={onAddStickyNote} icon={StickyNote} label="Sticky Note" />
           <ToolbarButton onClick={onAddTextNode} icon={Type} label="Text" />
@@ -47,7 +58,7 @@ const Toolbar = ({ onAddNode, onDelete, onSave, onExport, onGenerateAI, onAddSti
         
         <div className="flex items-center gap-2">
           <ToolbarButton onClick={onDelete} icon={Trash2} label="Delete" />
-          <ToolbarButton onClick={onGenerateAI} icon={Bot} label="AI Generate"  />
+          <ToolbarButton onClick={onGenerateAI} icon={Bot} label="AI Generate" />
           <ToolbarButton onClick={onSave} icon={Save} label="Save" />
           <ToolbarButton onClick={onExport} icon={Download} label="Export" />
         </div>
