@@ -23,7 +23,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { deleteFlowChart, getAllFlowcharts } from '../api/flowcharts';
 import { shareAccessAssociation } from '../api/associations';
 import { AuthContext } from '../context/authContext';
-import {changeName} from '../api/users';
+import {changeName,changePassword} from '../api/users';
 
 function UserDashboard() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
