@@ -23,6 +23,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { deleteFlowChart, getAllFlowcharts } from '../api/flowcharts';
 import { shareAccessAssociation } from '../api/associations';
 import { AuthContext } from '../context/authContext';
+import {changeName} from '../api/users';
 
 function UserDashboard() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -57,12 +58,32 @@ function UserDashboard() {
 
   const handleEditProfile = async (e) => {
     e.preventDefault();
+    
+    // Validate input
+    if (!newName.trim()) {
+      toast.error('Name cannot be empty');
+      return;
+    }
+  
     try {
-      await changeName({ name: newName });
-      toast.success('Name updated successfully!');
-      setShowEditProfileModal(false);
+      const response = await changeName({ name: newName });
+      
+      if (response.data) {
+        // Update local user context if needed
+        // updateUser({ ...user, name: newName });
+        
+        toast.success('Name updated successfully!');
+        setShowEditProfileModal(false);
+        
+        // Optional: Refresh user data or update context
+        window.location.reload();
+      }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to update name');
+      console.error('Error updating name:', error);
+      toast.error(
+        error.response?.data?.message || 
+        'Failed to update name. Please try again.'
+      );
     }
   };
 
@@ -123,17 +144,18 @@ function UserDashboard() {
     const userConfirmed = window.confirm("Are you sure you want to delete this flowchart? This action cannot be undone.");
     if (userConfirmed) {
       try {
-        const status = await deleteFlowChart(flowchartId);
-        if (status === 200) {
-          window.alert('Flowchart deleted successfully');
-          window.location.reload();
+        const response = await deleteFlowChart(flowchartId);
+        if (response.status === 200) {
+          toast.success('Flowchart deleted successfully');
+          // Refresh the flowcharts list without page reload
+          const data = await getAllFlowcharts();
+          setRecentFiles(data);
         }
-      } catch (e) {
-        console.error(e);
-        window.alert(e.data.message);
+      } catch (error) {
+        toast.error(error.data?.message || 'Failed to delete flowchart');
       }
+      setShowSettingsDropdown(null);
     }
-    setShowSettingsDropdown(null);
   };
 
   const handleEdit = (flowchartId) => {
@@ -357,7 +379,7 @@ function UserDashboard() {
                                 Edit
                               </button>
                               <button
-                                onClick={() => handleDelete(file.id)}
+                                onClick={() => handleDelete(file.flowchart._id)}
                                 className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                               >
                                 <Trash2 className="h-4 w-4 mr-3" />

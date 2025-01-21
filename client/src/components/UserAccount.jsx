@@ -9,17 +9,30 @@ const UserAccount = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
 
-    const handleNameChange = async () => {
+    const handleNameChange = async (e) => {
+        e.preventDefault();
+        if (!name.trim()) {
+            setMessage('Name cannot be empty');
+            return;
+        }
+
+        setIsLoading(true);
         try {
-            const healthCheckStatus = await healthCheck();
-            if (healthCheckStatus.status === 200) {
-                const response = await changeName({ name });
-                setMessage(`Name updated successfully to ${response.data.name}`);
+            const response = await changeName({ name: name.trim() });
+            if (response.status === 200) {
+                setMessage('Name updated successfully!');
+                setName('');
             }
         } catch (error) {
-            setMessage('Error changing name: ' + error.response?.data?.message || error.message);
+            setMessage(
+                error.response?.status === 401 ? 'Please login again' :
+                    error.response?.data?.message || 'Failed to update name'
+            );
+        } finally {
+            setIsLoading(false);
         }
     };
+
 
     const handleChangePassword = async () => {
         if (newPassword !== confirmPassword) {
@@ -28,7 +41,7 @@ const UserAccount = () => {
         }
 
         try {
-            const response = await changePassword({currentPassword, newPassword});
+            const response = await changePassword({ currentPassword, newPassword });
             setMessage('Password updated successfully.');
         } catch (error) {
             setMessage('Error changing password: ' + error.response?.data?.message || error.message);
@@ -38,7 +51,7 @@ const UserAccount = () => {
     return (
         <div style={{ padding: '20px', maxWidth: '500px', margin: 'auto', fontFamily: 'Arial, sans-serif' }}>
             <h2>User Account Management</h2>
-            
+
             <div style={{ marginBottom: '20px' }}>
                 <h3>Change Name</h3>
                 <input
@@ -50,9 +63,18 @@ const UserAccount = () => {
                 />
                 <button
                     onClick={handleNameChange}
-                    style={{ padding: '10px 20px', backgroundColor: '#007BFF', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                    disabled={isLoading}
+                    style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#007BFF',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: isLoading ? 'not-allowed' : 'pointer',
+                        opacity: isLoading ? 0.7 : 1
+                    }}
                 >
-                    Change Name
+                    {isLoading ? 'Updating...' : 'Change Name'}
                 </button>
             </div>
 

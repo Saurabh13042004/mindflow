@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { toPng } from "html-to-image";
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import jsPDF from 'jspdf';
 import ReactFlow, {
   addEdge,
   useNodesState,
@@ -378,22 +379,108 @@ export default function CanvasPage() {
   // Function to download the current graph as a png image
   const onExport = useCallback(() => {
     const reactFlowWrapper = document.getElementById("reactflow-wrapper");
-
-    if (reactFlowWrapper) {
-      toPng(reactFlowWrapper)
-        .then((dataUrl) => {
-          const a = document.createElement("a");
-          a.href = dataUrl;
-          a.download = "graph.png";
-          a.click();
-        })
-        .catch((error) => {
-          console.error("Error exporting image:", error);
-        });
-    } else {
+  
+    if (!reactFlowWrapper) {
       console.error("React Flow wrapper not found!");
+      return;
     }
+  
+    const exportOptions = [
+      { label: 'PNG', value: 'png' },
+      { label: 'PDF', value: 'pdf' }
+    ];
+  
+    // Create a simple modal for format selection
+    const formatSelector = document.createElement('div');
+    formatSelector.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+      ">
+        <h3 style="margin-bottom: 15px;">Select Export Format</h3>
+        ${exportOptions.map(option => `
+          <button style="
+            margin: 5px;
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            background: #f8fafc;
+            cursor: pointer;
+          "
+          data-format="${option.value}"
+          >${option.label}</button>
+        `).join('')}
+      </div>
+    `;
+  
+    document.body.appendChild(formatSelector);
+  
+    // Handle format selection
+    formatSelector.addEventListener('click', async (e) => {
+      const target = e.target as HTMLElement;
+      const format = target.getAttribute('data-format');
+      
+      if (format) {
+        try {
+          if (format === 'png') {
+            // Existing PNG export logic
+            const dataUrl = await toPng(reactFlowWrapper);
+            const a = document.createElement("a");
+            a.href = dataUrl;
+            a.download = "mindmap.png";
+            a.click();
+          } else if (format === 'pdf') {
+            // New PDF export logic
+            const dataUrl = await toPng(reactFlowWrapper);
+            const pdf = new jsPDF({
+              orientation: 'landscape',
+              unit: 'px',
+              format: [reactFlowWrapper.clientWidth, reactFlowWrapper.clientHeight]
+            });
+  
+            // Calculate dimensions to fit the PDF page while maintaining aspect ratio
+            const imgProps = pdf.getImageProperties(dataUrl);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const aspectRatio = imgProps.width / imgProps.height;
+            
+            let imgWidth = pdfWidth;
+            let imgHeight = pdfWidth / aspectRatio;
+            
+            if (imgHeight > pdfHeight) {
+              imgHeight = pdfHeight;
+              imgWidth = pdfHeight * aspectRatio;
+            }
+  
+            pdf.addImage(
+              dataUrl, 
+              'PNG', 
+              (pdfWidth - imgWidth) / 2, // Center horizontally
+              (pdfHeight - imgHeight) / 2, // Center vertically
+              imgWidth, 
+              imgHeight
+            );
+            
+            pdf.save("mindmap.pdf");
+          }
+        } catch (error) {
+          console.error("Error exporting:", error);
+          toast.error("Failed to export mindmap");
+        }
+        
+        // Remove the format selector after export
+        document.body.removeChild(formatSelector);
+      }
+    });
   }, []);
+  
 
   // Function to delete any node / edge which is selected
   const onDelete = useCallback(() => {
