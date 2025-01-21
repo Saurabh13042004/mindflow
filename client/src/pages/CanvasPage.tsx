@@ -84,9 +84,13 @@ function CustomNode({ id, data }: CustomNodeProps) {
     setIsEditing(true);
   };
 
+
   const handleInputBlur = () => {
     setIsEditing(false);
-    data.onLabelChange(id, label);
+    // If empty, set to default text
+    const finalLabel = label.trim() || 'New Node';
+    setLabel(finalLabel);
+    data.onLabelChange(id, finalLabel);
   };
 
   const handleInputChange = (event) => {
@@ -131,6 +135,7 @@ function CustomNode({ id, data }: CustomNodeProps) {
                   fontFamily: data.style.fontFamily,
                   fontSize: data.style.fontSize,
                 }}
+                placeholder="Enter text..."
                 autoFocus
               />
             ) : (
@@ -143,7 +148,7 @@ function CustomNode({ id, data }: CustomNodeProps) {
                 }}
                 onDoubleClick={handleDoubleClick}
               >
-                {label}
+                {label || 'Double click to edit'}
               </div>
             )}
           </div>
@@ -379,17 +384,17 @@ export default function CanvasPage() {
   // Function to download the current graph as a png image
   const onExport = useCallback(() => {
     const reactFlowWrapper = document.getElementById("reactflow-wrapper");
-  
+
     if (!reactFlowWrapper) {
       console.error("React Flow wrapper not found!");
       return;
     }
-  
+
     const exportOptions = [
       { label: 'PNG', value: 'png' },
       { label: 'PDF', value: 'pdf' }
     ];
-  
+
     // Create a simple modal for format selection
     const formatSelector = document.createElement('div');
     formatSelector.innerHTML = `
@@ -419,14 +424,14 @@ export default function CanvasPage() {
         `).join('')}
       </div>
     `;
-  
+
     document.body.appendChild(formatSelector);
-  
+
     // Handle format selection
     formatSelector.addEventListener('click', async (e) => {
       const target = e.target as HTMLElement;
       const format = target.getAttribute('data-format');
-      
+
       if (format) {
         try {
           if (format === 'png') {
@@ -444,64 +449,64 @@ export default function CanvasPage() {
               unit: 'px',
               format: [reactFlowWrapper.clientWidth, reactFlowWrapper.clientHeight]
             });
-  
+
             // Calculate dimensions to fit the PDF page while maintaining aspect ratio
             const imgProps = pdf.getImageProperties(dataUrl);
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
             const aspectRatio = imgProps.width / imgProps.height;
-            
+
             let imgWidth = pdfWidth;
             let imgHeight = pdfWidth / aspectRatio;
-            
+
             if (imgHeight > pdfHeight) {
               imgHeight = pdfHeight;
               imgWidth = pdfHeight * aspectRatio;
             }
-  
+
             pdf.addImage(
-              dataUrl, 
-              'PNG', 
+              dataUrl,
+              'PNG',
               (pdfWidth - imgWidth) / 2, // Center horizontally
               (pdfHeight - imgHeight) / 2, // Center vertically
-              imgWidth, 
+              imgWidth,
               imgHeight
             );
-            
+
             pdf.save("mindmap.pdf");
           }
         } catch (error) {
           console.error("Error exporting:", error);
           toast.error("Failed to export mindmap");
         }
-        
+
         // Remove the format selector after export
         document.body.removeChild(formatSelector);
       }
     });
   }, []);
-  
+
 
   // Function to delete any node / edge which is selected
   const onDelete = useCallback(() => {
     if (isViewer) return;
-  
+
     const selectedNodes = nodes.filter((node) => node.selected);
     const selectedEdges = edges.filter((edge) => edge.selected);
-  
+
     if (selectedNodes.length > 0) {
       const connectedEdges = selectedNodes.flatMap((node) =>
         edges.filter((edge) => edge.source === node.id || edge.target === node.id)
       );
-  
+
       if (connectedEdges.length > 0) {
         toast.error("Please delete the connections before deleting the node.");
         return;
       }
-  
+
       setNodes((nds) => nds.filter((node) => !node.selected));
     }
-  
+
     if (selectedEdges.length > 0) {
       setEdges((eds) => eds.filter((edge) => !edge.selected));
     }
@@ -513,9 +518,9 @@ export default function CanvasPage() {
         onDelete();
       }
     };
-  
+
     window.addEventListener('keydown', handleKeyDown);
-    
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
@@ -690,7 +695,7 @@ export default function CanvasPage() {
         onGenerateAI={() => setShowAIModal(true)}
         onAddStickyNote={onAddStickyNote}
         onAddTextNode={onAddTextNode}
-        onShowTemplates={() => setShowTemplates(true)} 
+        onShowTemplates={() => setShowTemplates(true)}
       />
 
       <ReactFlow
@@ -713,11 +718,11 @@ export default function CanvasPage() {
       </ReactFlow>
 
       {showTemplates && (
-      <TemplateSelector
-        onSelect={handleTemplateSelect}
-        onClose={() => setShowTemplates(false)}
-      />
-    )}
+        <TemplateSelector
+          onSelect={handleTemplateSelect}
+          onClose={() => setShowTemplates(false)}
+        />
+      )}
 
       {title && (
         <SaveModal
