@@ -97,8 +97,9 @@ function CustomNode({ id, data }: CustomNodeProps) {
     setLabel(event.target.value);
   };
 
-  const handleClick = () => {
+  const handleClick = (e) => {
     setShowButtons(!showButtons); // Toggle buttons visibility
+
   };
 
   const handleStyleChange = (newStyle: Partial<typeof data.style>) => {
@@ -109,7 +110,7 @@ function CustomNode({ id, data }: CustomNodeProps) {
     <>
       <div
         className="relative px-6 py-3 shadow-lg rounded-lg bg-white/95 border-2 border-blue-200 
-  hover:border-blue-400 transition-all duration-200 backdrop-blur-sm"
+  hover:border-blue-400 transition-all duration-200 backdrop-blur-sm group relative"
         style={{
           width: '280px',
           minHeight: '60px',
@@ -117,8 +118,23 @@ function CustomNode({ id, data }: CustomNodeProps) {
           borderColor: data.style.borderColor,
           borderRadius: data.style.borderRadius,
           borderStyle: data.style.borderStyle,
+          clipPath: data.style.clipPath,
+          aspectRatio: data.style.aspectRatio,
+          display: data.style.display,
+          alignItems: data.style.alignItems,
+          justifyContent: data.style.justifyContent,
+          transform: data.style.transform,
+          padding: data.style.shape === 'rectangle' ? '12px 24px' : '8px',
+          position: 'relative',
+          zIndex: 5,
+          pointerEvents: 'auto',
+          overflow: 'visible',
+
         }}
-        onClick={handleClick}
+        onClick={(e) => {
+          e.stopPropagation();  // 🔹 Prevent clicks from closing the button menu
+          setShowButtons(!showButtons);
+        }}
       >
         <div className="flex items-center">
           <div className="ml-2 w-full">
@@ -162,6 +178,7 @@ function CustomNode({ id, data }: CustomNodeProps) {
   rounded-full bg-white/90 hover:bg-blue-50 shadow-md transition-all 
   duration-200 hover:scale-110 focus:outline-none group"
               onClick={() => setShowCustomizer(!showCustomizer)}
+              style={{ pointerEvents: "auto" }}
               aria-label="Customize Node on Click"
             >
               <Settings className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
@@ -174,6 +191,7 @@ function CustomNode({ id, data }: CustomNodeProps) {
                 buttonPressed.push("top");
                 data.onAddChild(id);
               }}
+              style={{ pointerEvents: "auto" }}
               aria-label="Add connected node top"
             >
               <PlusCircle className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
@@ -181,6 +199,7 @@ function CustomNode({ id, data }: CustomNodeProps) {
             <button
               className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 p-2 rounded-full bg-white/90 hover:bg-blue-50 shadow-md transition-all 
   duration-200 hover:scale-110 focus:outline-none group"
+              style={{ pointerEvents: "auto" }}
               onClick={() => {
                 buttonPressed.push("bottom");
                 data.onAddChild(id);
@@ -195,6 +214,7 @@ function CustomNode({ id, data }: CustomNodeProps) {
                 buttonPressed.push("right");
                 data.onAddChild(id);
               }}
+              style={{ pointerEvents: "auto" }}
               aria-label="Add connected node right"
             >
               <PlusCircle className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
@@ -205,6 +225,7 @@ function CustomNode({ id, data }: CustomNodeProps) {
                 buttonPressed.push("left");
                 data.onAddChild(id);
               }}
+              style={{ pointerEvents: "auto" }}
               aria-label="Add connected node left"
             >
               <PlusCircle className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
